@@ -1,0 +1,29 @@
+
+; ADT Stack
+;======================================================
+; TODO: Use List or Vector???
+(define (Stack)
+  (define istack '())
+  (define (push x)
+    (cons x istack))
+  (define (top)
+    (if (null? istack)
+        #f
+        (car istack)))
+  (define (pop)
+    (if (null? istack)
+        #f
+        (begin (car istack)
+               (set! istack (cdr istack)))))
+  (define (Implements? ClassDef)
+    (eq? ClassDef 'Stack))
+  (λ msg
+    (if (null? msg)
+        (top)
+        (case (car msg)
+          ('push (push (GetParam msg 0)))
+          ('top (top))
+          ('pop (pop))
+          ('Implements? (Implements? (GetParam msg 0)))
+          (else (error 'Stack "message not understood: ~S" (car msg)))))))
+

@@ -1,0 +1,62 @@
+; Globals that come in handy for oop
+
+;FIXME: Might cause overhead as is
+;SOLUTION: On receiving of lessage, convert to vector.
+(define (GetParam msg n)
+  (define (iter m ctr)
+    ; FIXME: Maybe add msg? check here?
+    (cond ((null? m) (error 'GetParam "Not enough params passed to message ~S (needed at least ~S, given ~S)" (car msg) n (- n ctr)))
+          ((= n 0) (car m))
+          (else (iter (cdr m) (- n 1)))))
+  (iter (cdr msg) n))
+
+; ADT Card
+;===========
+
+(define (Card kleur nummer ==?)
+  (define (Kleur)
+    kleur)
+  (define (Nummer)
+    nummer)
+  (define (=? Other)
+    (==? (Card kleur nummer ==?) Other))
+  (define (Implements? ClassDef)
+    (eq? ClassDef 'Card))
+  (λ msg
+    (if (null? msg)
+        (begin (display (cons (Kleur) (Nummer))))
+        (case (car msg)
+          ('kleur (Kleur))
+          ('nummer (Nummer))
+          ('=? (=? (GetParam msg 0)))
+          ('Implements? (Implements? (GetParam msg 0)))
+          (else (error 'Card "message not understood: ~S" (car msg)))))))
+
+; ADT Stack
+;======================================================
+; TODO: Use List or Vector???
+(define (Stack)
+  (define istack '())
+  (define (push x)
+    (cons x istack))
+  (define (top)
+    (if (null? istack)
+        #f
+        (car istack)))
+  (define (pop)
+    (if (null? istack)
+        #f
+        (begin (car istack)
+               (set! istack (cdr istack)))))
+  (define (Implements? ClassDef)
+    (eq? ClassDef 'Stack))
+  (λ msg
+    (if (null? msg)
+        (top)
+        (case (car msg)
+          ('push (push (GetParam msg 0)))
+          ('top (top))
+          ('pop (pop))
+          ('Implements? (Implements? (GetParam msg 0)))
+          (else (error 'Stack "message not understood: ~S" (car msg)))))))
+
