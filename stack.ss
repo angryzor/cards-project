@@ -1,5 +1,7 @@
 ; ADT Stack< T >
 ;======================================================
+; Specifications
+;------------------------------------------------------
 ; Stack: ( -> Stack )
 ; Stack.empty?: ( -> boolean )
 ; Stack.full?: ( -> boolean )
