@@ -7,17 +7,82 @@
 ; Card.Value: ( -> number )
 ; Card.=?: ( Card -> boolean )
 
-(define-macro CARD_HIGHER 1)
-(define-macro CARD_EQUAL 0)
-(define-macro CARD_LOWER -1)
+;Macro's that may be used by the comparison function passed to Card.
+(define-macro Card.CARD_HIGHER 1)
+(define-macro Card.CARD_EQUAL 0)
+(define-macro Card.CARD_LOWER -1)
+
 
 (define (Card color value ==?)
+  ;*****************************************************************
+  ; function Color
+  ;
+  ; @params: /
+  ; @return: color of the card
+  ;*****************************************************************
   (define (Color)
     color)
+  ;*****************************************************************
+  ; function Value
+  ;
+  ; @params: /
+  ; @return: value of the card
+  ;*****************************************************************
   (define (Value)
     value)
+  ;*****************************************************************
+  ; function =?
+  ;
+  ; @params: Other (Card)
+  ; @return: true if this card is equal to Other, false otherwise
+  ;*****************************************************************
   (define (=? Other)
-    (==? (Card color value ==?) Other))
+    (= (==? (Card color value ==?) Other) 0))
+  ;*****************************************************************
+  ; function <?
+  ;
+  ; @params: Other (Card)
+  ; @return: true if this card is lower than Other, false
+  ;          otherwise
+  ;*****************************************************************
+  (define (<? Other)
+    (= (==? (Card color value ==?) Other) -1))
+  ;*****************************************************************
+  ; function >?
+  ;
+  ; @params: Other (Card)
+  ; @return: true if this card is higher than Other, false
+  ;          otherwise
+  ;*****************************************************************
+  (define (>? Other)
+    (= (==? (Card color value ==?) Other) 1))
+  ;*****************************************************************
+  ; function <=?
+  ;
+  ; @params: Other (Card)
+  ; @return: true if this card is lower than or equal to Other,
+  ;          false otherwise
+  ;*****************************************************************
+  (define (<=? Other)
+    (let ((cmpres (==? (Card color value ==?) Other)))
+      (or (= cmpres -1) (= cmpres 0))))
+  ;*****************************************************************
+  ; function >=?
+  ;
+  ; @params: Other (Card)
+  ; @return: true if this card is higher than or equal to Other,
+  ;          false otherwise
+  ;*****************************************************************
+  (define (>=? Other)
+    (let ((cmpres (==? (Card color value ==?) Other)))
+      (or (= cmpres 0) (= cmpres 1))))
+  ;*****************************************************************
+  ; function Implements?
+  ;
+  ; @params: ClassDef (symbol)
+  ; @return: true if the ADT supports the functions for the 
+  ;          type passed via ClassDef, false otherwise
+  ;*****************************************************************
   (define (Implements? ClassDef)
     (eq? ClassDef 'Card))
   (λ msg
@@ -27,5 +92,9 @@
           ('Color (Color))
           ('Value (Value))
           ('=? (=? (GetParam msg 0)))
+          ('<? (<? (GetParam msg 0)))
+          ('>? (>? (GetParam msg 0)))
+          ('<=? (<=? (GetParam msg 0)))
+          ('>=? (>=? (GetParam msg 0)))
           ('Implements? (Implements? (GetParam msg 0)))
           (else (error 'Card "message not understood: ~S" (car msg)))))))
