@@ -9,6 +9,7 @@
 ; Stack.top: ( -> T )
 ; Stack.pop!: ( -> T )
 ; Stack.Implements? ( symbol -> boolean )
+(load "global.ss")
 
 (define (Stack)
   (define istack '())
@@ -36,7 +37,7 @@
   ; @return: x
   ;************************************************
   (define (push! x)
-    (cons x istack)
+    (set! istack (cons x istack))
     x)
   ;************************************************
   ; function top

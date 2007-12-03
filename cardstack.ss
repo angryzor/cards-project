@@ -1,6 +1,7 @@
 ; ADT CardStack
 ;================================================
 (load "stack.ss")
+(require (lib "trace.ss"))
 
 (define (CardStack)
   (define stck (Stack))
@@ -12,16 +13,29 @@
   ; @return: #t
   ;*******************************************************
   (define (shuffle)
-    (define (@popall!)
-      (if (empty? stck)
+    (define (popall!)
+      (if (stck 'empty?)
           '()
-          (cons (stck 'pop!) (@popall!))))
-    (define (@pushall! vec ctr)
+          (cons (stck 'pop!) (popall!))))
+    (define (pushall! vec ctr)
       (if (< ctr (vector-length vec))
-          (stck 'push! (vector-ref ctr))))
-    (define (@do_shuffle vec ctr)
-      (if (= ctr (vector-length 
-    (let ((allcards (list->vector (@popall!))))
+          (begin (stck 'push! (vector-ref vec ctr))
+                 (pushall! vec (+ ctr 1)))))
+    (define (knuth_shuffle vec)
+      (define (knuth_shuffle_inner vec n)
+        (if (< n 1)
+            vec
+            (let ((k (random (+ n 1))))
+              (if (not (= k n))
+                  (let ((tmp (vector-ref vec k)))
+                    (vector-set! vec k (vector-ref vec n))
+                    (vector-set! vec n tmp)))
+              (knuth_shuffle_inner vec (- n 1)))))
+      (knuth_shuffle_inner vec (- (vector-length vec) 1)))
+    (pushall!
+     (knuth_shuffle
+      (list->vector
+       (popall!))) 0))
   ;*****************************************************************
   ; function Implements?
   ;
@@ -38,3 +52,11 @@
           ('shuffle (shuffle))
           ('Implements? (Implements? (GetParam msg 0)))
           (else (apply stck msg))))))
+
+;DEBUG
+(define tst (CardStack))
+(tst 'push! 3)
+(tst 'push! 4)
+(tst 'push! 5)
+(tst 'push! 6)
+tst
