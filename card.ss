@@ -7,10 +7,10 @@
 ; Card.Value: ( -> number )
 ; Card.=?: ( Card -> boolean )
 
-;Macro's that may be used by the comparison function passed to Card.
-(define-macro Card.CARD_HIGHER 1)
-(define-macro Card.CARD_EQUAL 0)
-(define-macro Card.CARD_LOWER -1)
+;Values that may be used by the comparison function passed to Card.
+(define Card.CARD_HIGHER 1)
+(define Card.CARD_EQUAL 0)
+(define Card.CARD_LOWER -1)
 
 
 (define (Card color value ==?)

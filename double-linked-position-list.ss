@@ -160,9 +160,14 @@
     (if (empty?)
         (error 'double-linked-position-list "last position requested, but list is empty!")
         last))
-  (define (find value)
-    ;    /****/
-    value)
+  (define (find value) ; Writing a very complex searching algorithm isn't really necessary since a player will seldom hold more than 20 cards... (even 13)
+    (define (iter pos)
+      (cond ((==? (pos 'value) value) pos)
+            ((pos 'has-next?) (iter (pos 'next)))
+            (else #f)))
+    (if (empty?)
+        #f
+        (iter first)))
   (define (delete! pos)
     (cond ((null? pos) (error 'double-linked-position-list.delete! "Cannot delete null position"))
           ((<= size 0) (error 'double-linked-position-list.delete! "Utterly weird error occurred: delete! invoked with valid position, but list size is ~S" size))
@@ -184,6 +189,15 @@
       (if (eq? afterpos last)
           (attach-last val)
           (attach-after-middle val afterpos))))
+  
+  (define (getnext pos)
+    (pos 'next))
+  
+  (define (getprev pos)
+    (pos 'prev))
+  
+  (define (getval pos)
+    (pos 'value))
   
   
   (define (debug-print-complete)
@@ -218,12 +232,9 @@
           ('delete! (delete! (GetParam msg 0)))
           ('add-before! (apply add-before! (GetParam msg 0) (cddr msg)))
           ('add-after! (apply add-after! (GetParam msg 0) (cddr msg)))
+          ('next (getnext (GetParam msg 0)))
+          ('prev (getprev (GetParam msg 0)))
+          ('value (getval (GetParam msg 0)))
           ('print (debug-print-complete))
           ('Implements? (Implements? (GetParam msg 0)))
           (else (error 'double-linked-position-list "message not understood: ~S" (car msg)))))))
-
-(define tst (double-linked-position-list =))
-(tst 'add-after! 5)
-(tst 'add-after! 8)
-(tst 'add-after! 9)
-(tst 'print)
