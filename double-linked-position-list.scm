@@ -110,7 +110,7 @@
   
   (define (from-scheme-list lst)
     (if (not (null? lst))
-        (begin (add-after (car lst))
+        (begin (add-after! (car lst))
                (from-scheme-list (cdr lst)))))
   (define (length)
     size)
