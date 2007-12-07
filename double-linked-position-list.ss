@@ -212,6 +212,9 @@
                 (iter first)
                 (display ")"))))
   
+  (define (Implements? classdef)
+    (eq? classdef 'double-linked-position-list))
+  
   (unless (null? lst)
     (from-scheme-list (car lst)))
   

@@ -85,6 +85,13 @@
   ;*****************************************************************
   (define (Implements? ClassDef)
     (eq? ClassDef 'Card))
+  
+  ;Check for wrong types of arguments
+  (if (not (symbol? color))
+      (error 'Card "expects type <symbol> as 1st argument, given: ~S" color))
+  (if (not (number? value))
+      (error 'Card "expects type <number> as 1st argument, given: ~S" value))
+  
   (λ msg
     (if (null? msg)
         (begin (display (cons (Color) (Value))))
