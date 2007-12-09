@@ -6,6 +6,11 @@
 ; Card.Color: ( -> symbol )
 ; Card.Value: ( -> number )
 ; Card.=?: ( Card -> boolean )
+; Card.<?: ( Card -> boolean )
+; Card.>?: ( Card -> boolean )
+; Card.<=?: ( Card -> boolean )
+; Card.>=?: ( Card -> boolean )
+; Card.Implements?: ( symbol -> boolean )
 
 ;Values that may be used by the comparison function passed to Card.
 (define Card.CARD_HIGHER 1)

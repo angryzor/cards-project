@@ -1,3 +1,28 @@
+; ADT double-linked-position-list< T >
+;=======================================
+; Specification:
+;---------------------------------------
+; double-linked-position-list: ( ( T T -> boolean ) . list< T > -> double-linked-position-list< T > )
+; length: ( -> number )
+; full? ( -> boolean )
+; empty? ( -> boolean )
+; map ( ( T -> T ) ( T T -> boolean ) -> double-linked-position-list< T > )
+; map! ( ( T -> T ) ( T T -> boolean ) -> {#t} )
+; foldl ( ( T T -> T ) T -> T )
+; foldr ( ( T T -> T ) T -> T )
+; first-position ( -> double-linked-position< T > )
+; last-position ( -> double-linked-position< T > )
+; find ( T -> double-linked-position< T > )
+; delete! ( double-linked-position< T > -> #<void> )
+; add-before! ( T . double-linked-position< T > -> #<void> )
+; add-after! ( T . double-linked-position< T > -> #<void> )
+; next ( double-linked-position< T > -> double-linked-position< T > )
+; prev ( double-linked-position< T > -> double-linked-position< T > )
+; value ( double-linked-position< T > -> T )
+; print ( -> #<void> )
+; Implements? ( symbol -> boolean )
+
+
 (load "global.ss")
 
 
@@ -199,6 +224,11 @@
   (define (getval pos)
     (pos 'value))
   
+  (define (gethas-next? pos)
+    (pos 'has-next?))
+  
+  (define (gethas-prev? pos)
+    (pos 'has-prev?))
   
   (define (debug-print-complete)
     (define (iter pos)
@@ -238,6 +268,12 @@
           ('next (getnext (GetParam msg 0)))
           ('prev (getprev (GetParam msg 0)))
           ('value (getval (GetParam msg 0)))
+          ('has-next? (gethas-next? (GetParam msg 0)))
+          ('has-prev? (gethas-prev? (GetParam msg 0)))
           ('print (debug-print-complete))
           ('Implements? (Implements? (GetParam msg 0)))
           (else (error 'double-linked-position-list "message not understood: ~S" (car msg)))))))
+
+
+; Makes the type of position list selectable by load
+(define position-list double-linked-position-list)
