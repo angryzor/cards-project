@@ -1,17 +1,21 @@
 (load "cardset.ss")
 
-(define (Player GameManager)
+(define (Player GameManager DrawerClass)
   (define hand (CardSet))
   
-  (define (GetCard card)
+  (define (ReceiveCard card)
     (hand 'add-card! card))
   
-  (define (GiveCard card)
+  (define (DiscardCard card)
     (hand 'delete-card! card))
   
   (define (YourTurn card)
-    (if (bDebug)
-        (display 'Player "Dummy function \"YourTurn\" does not know what to do.")))
+    (if bDebug
+        (display 'Player "this is an abstract class, only meant to be subclassed. Do not use it directly")))
+  
+  (define (DisplayUpdateTick)
+    (if bDebug
+        (display 'Player "this is an abstract class, only meant to be subclassed. Do not use it directly")))
   
   (define (Implements? ClassDef)
     (eq? ClassDef 'Player))
@@ -20,9 +24,4 @@
     (if (null? msg)
         (first-position)
         (case (car msg)
-          ('add! (add! (GetParam 0)))
-          ('delete! (delete! (GetParam 0)))
-          ('copyToPosList (copyToPosList))
-          ('toPosList (toPosList))
-          ('get-card (get-card (GetParam 0)))
           (else (error 'Player "message not understood: ~S" (car msg)))))))
