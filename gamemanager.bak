@@ -1,0 +1,2 @@
+(define (GameManager numplayers playerclass)
+  (define players (make-vector (

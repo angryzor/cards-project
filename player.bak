@@ -1,0 +1,7 @@
+(load "cardset.ss")
+
+(define (Player GameManager)
+  (define hand (CardSet))
+  
+  (define (GetCard card)
+    (hand 'add-card! card))

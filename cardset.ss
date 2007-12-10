@@ -17,12 +17,22 @@
         (plst 'delete! (plst 'find card))
         (error 'CardSet.delete! "expects type <Card> as argument, given: ~S" card)))
   
-  (define (getAllCards)
-    (define (iter nowpos lst)
-      (if (plst 'has-next? nowpos)
-          (iter (plst 'next nowpos) (cons (plst 'value nowpos) lst))
-          (reverse lst)))
-    (if (not (plst 'empty?))
-        (iter (plst 'first-position) '())))
+  (define (copyToPosList)
+    (plst 'duplicate))
   
+  (define (toPosList)
+    plst)
   
+  (define (get-card card)
+    (plst 'find card))
+  
+  (λ msg
+    (if (null? msg)
+        (first-position)
+        (case (car msg)
+          ('add! (add! (GetParam msg 0)))
+          ('delete! (delete! (GetParam msg 0)))
+          ('copyToPosList (copyToPosList))
+          ('toPosList (toPosList))
+          ('get-card (get-card (GetParam msg 0)))
+          (else (error 'CardSet "message not understood: ~S" (car msg)))))))
