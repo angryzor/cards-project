@@ -22,6 +22,6 @@
   
   (λ msg
     (if (null? msg)
-        (first-position)
+        (error 'Player "object requires a message")
         (case (car msg)
           (else (error 'Player "message not understood: ~S" (car msg)))))))
