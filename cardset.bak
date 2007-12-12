@@ -1,0 +1,38 @@
+(load "double-linked-position-list.ss")
+
+(define (CardSet)
+  (define (Card-ComparisonCaller x y)
+    (x '=? y))
+  (define plst (position-list Card-ComparisonCaller))
+  
+  (define (add! card)
+    (if (and (procedure? card)
+             (card 'Implements? 'Card))
+        (plst 'add-after! card)
+        (error 'CardSet.add! "expects type <Card> as argument, given: ~S" card)))
+  
+  (define (delete! card)
+    (if (and (procedure? card)
+             (card 'Implements? 'Card))
+        (plst 'delete! (plst 'find card))
+        (error 'CardSet.delete! "expects type <Card> as argument, given: ~S" card)))
+  
+  (define (copyToPosList)
+    (plst 'duplicate))
+  
+  (define (toPosList)
+    plst)
+  
+  (define (get-card card)
+    (plst 'find card))
+  
+  (λ msg
+    (if (null? msg)
+        (first-position)
+        (case (car msg)
+          ('add! (add! (GetParam msg 0)))
+          ('delete! (delete! (GetParam msg 0)))
+          ('copyToPosList (copyToPosList))
+          ('toPosList (toPosList))
+          ('get-card (get-card (GetParam msg 0)))
+          (else (error 'CardSet "message not understood: ~S" (car msg)))))))

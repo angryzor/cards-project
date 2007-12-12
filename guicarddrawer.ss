@@ -1,14 +1,27 @@
-(define (GUICardDrawer vp)
+(require (lib "graphics.ss" "graphics"))
+(load "global.ss")
+(load "cardset.ss")
+(load "card.ss")
+
+(define (SimpleGUICardDrawer vp)
+  (define mydraw-pixmap (draw-pixmap vp))
   (define (DrawCard card x y)
     (define (GetCardString)
       (if (and (procedure? card)
                (card 'Implements? 'Card))
-          (string-append "C:\\Program Files\\PLT\\collects\\games\\cards\\hicolor\\"
+          (string-append "C:\\Program Files\\PLT\\collects\\games\\cards\\hicolor\\card-"
+                         (number->string (- (card 'Value) 1))
                          (case (card 'Color)
-                           ('klaveren "0-")
-                           ('ruiten "1-")
-                           ('harten "2-")
-                           ('schoppen "3-"))
-                         (- (card 'Value) 1)
+                           ('klaveren "-0")
+                           ('ruiten "-1")
+                           ('harten "-2")
+                           ('schoppen "-3"))
                          ".png")))
-    
+    (mydraw-pixmap (GetCardString) (make-posn x y)))
+  
+  (λ msg
+    (if (null? msg)
+        (error 'SimpleGUICardDrawer "object requires a message")
+        (case (car msg)
+          ('DrawCard (DrawCard (GetParam msg 0)))
+          (else (error 'Player "message not understood: ~S" (car msg)))))))
