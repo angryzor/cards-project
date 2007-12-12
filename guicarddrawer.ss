@@ -9,7 +9,7 @@
     (define (GetCardString)
       (if (and (procedure? card)
                (card 'Implements? 'Card))
-          (string-append "C:\\Program Files\\PLT\\collects\\games\\cards\\hicolor\\card-"
+          (string-append "games/cards/hicolor/card-"
                          (number->string (- (card 'Value) 1))
                          (case (card 'Color)
                            ('klaveren "-0")
@@ -23,5 +23,5 @@
     (if (null? msg)
         (error 'SimpleGUICardDrawer "object requires a message")
         (case (car msg)
-          ('DrawCard (DrawCard (GetParam msg 0)))
+          ('DrawCard (DrawCard (GetParam msg 0) (GetParam msg 1) (GetParam msg 2)))
           (else (error 'Player "message not understood: ~S" (car msg)))))))
