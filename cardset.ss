@@ -6,14 +6,12 @@
   (define plst (position-list Card-ComparisonCaller))
   
   (define (add! card)
-    (if (and (procedure? card)
-             (card 'Implements? 'Card))
+    (if (ObjectOfType? 'Card card))
         (plst 'add-after! card)
         (error 'CardSet.add! "expects type <Card> as argument, given: ~S" card)))
   
   (define (delete! card)
-    (if (and (procedure? card)
-             (card 'Implements? 'Card))
+    (if (ObjectOfType? 'Card card)
         (plst 'delete! (plst 'find card))
         (error 'CardSet.delete! "expects type <Card> as argument, given: ~S" card)))
   

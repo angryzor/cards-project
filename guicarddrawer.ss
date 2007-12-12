@@ -26,14 +26,12 @@
                                 (path->string (simplify-path (build-path base collectspath "games" "cards" "hicolor" (GetCardString))))
                                 (path->string (simplify-path (build-path collectspath "games" "cards" "hicolor" (GetCardString)))))))))
     
-    (if (and (procedure? card)
-             (card 'Implements? 'Card))
+    (if (ObjectOfType? 'Card card)
         (mydraw-pixmap (GetPath) (make-posn x y))
         (error 'SimpleGUICardDrawer.DrawCard "expects type <Card> as 1st argument, given: ~S" card)))
   
   (define (DrawCardSet set x y evolvedirection)
-    (if (and (procedure? set)
-             (set 'Implements? 'CardSet))
+    (if (ObjectOfType? 'CardSet set)
         (let ((lst (set 'toPosList)))
           (define (DrawNextCard pos x y)
             (DrawCard (lst 'value pos) x y)

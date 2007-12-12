@@ -14,7 +14,7 @@
     (if bDebug
         (display 'Player "this is an abstract class, only meant to be subclassed. Do not use it directly")))
   
-  (define (DisplayUpdateTick)
+  (define (DisplayUpdate)
     (if bDebug
         (display 'Player "this is an abstract class, only meant to be subclassed. Do not use it directly")))
   
@@ -25,4 +25,9 @@
     (if (null? msg)
         (error 'Player "object requires a message")
         (case (car msg)
+          ('ReceiveCard (ReceiveCard (GetParam msg 0)))
+          ('DiscardCard (DiscardCard (GetParam msg 0)))
+          ('YourTurn (YourTurn (GetParam msg 0)))
+          ('DisplayUpdate (DisplayUpdate (GetParam msg 0)))
+          ('Implements? (Implements? (GetParam msg 0)))
           (else (error 'Player "message not understood: ~S" (car msg)))))))

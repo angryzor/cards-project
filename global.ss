@@ -7,3 +7,6 @@
           (else (iter (cdr m) (- ctr 1)))))
   (iter (cdr msg) n))
 
+(define (ObjectOfType? classdef obj)
+  (and (procedure? obj)
+       (obj 'Implements? classdef)))
