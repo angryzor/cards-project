@@ -7,7 +7,8 @@
     (hand 'add-card! card))
   
   (define (DiscardCard card)
-    (hand 'delete-card! card))
+    (hand 'delete-card! card)
+    card)
   
   (define (YourTurn card)
     (if bDebug

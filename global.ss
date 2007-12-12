@@ -3,7 +3,7 @@
 (define (GetParam msg n)
   (define (iter m ctr)
     (cond ((null? m) (error 'GetParam "Not enough params passed to message ~S (needed at least ~S, given ~S)" (car msg) n (- n ctr)))
-          ((= n 0) (car m))
-          (else (iter (cdr m) (- n 1)))))
+          ((= ctr 0) (car m))
+          (else (iter (cdr m) (- ctr 1)))))
   (iter (cdr msg) n))
 
