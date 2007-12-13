@@ -1,7 +1,5 @@
 (require (lib "graphics.ss" "graphics"))
 (load "global.ss")
-(load "cardset.ss")
-(load "card.ss")
 
 (define (SimpleGUICardDrawer vp)
   (define mydraw-pixmap (draw-pixmap vp))
@@ -18,8 +16,7 @@
     
     (define (GetPath)
       (call-with-values (λ ()
-                          (call-with-values (λ ()
-                                              (values (find-system-path 'exec-file))) split-path))
+                          (split-path (find-system-path 'exec-file)))
                         (λ (base name must-be-dir?)
                           (let ((collectspath (find-system-path 'collects-dir)))
                             (if (relative-path? collectspath)

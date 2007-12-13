@@ -6,7 +6,7 @@
   (define plst (position-list Card-ComparisonCaller))
   
   (define (add! card)
-    (if (ObjectOfType? 'Card card))
+    (if (ObjectOfType? 'Card card)
         (plst 'add-after! card)
         (error 'CardSet.add! "expects type <Card> as argument, given: ~S" card)))
   
