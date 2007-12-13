@@ -1,11 +1,14 @@
 (load "guicarddrawer.ss")
 
-(define (GUIManager vpName width height)
+(define (SimpleGUIManager vpName width height)
   (define portDisplay (open-viewport vpName width height))
   (define portMemory (open-pixmap width height))
-  (define out (GUICardDrawer))
-  (define in (GUIInput))
+  (define out (SimpleGUICardDrawer portMemory))
+  (define in (SimpleGUIInput))
   
+  ;***********************************************************
+  ; Viewport operations shortened                            *
+  ;***********************************************************
   (define mydraw-viewport (draw-viewport portMemory))
   
   ;**********************************************************$
@@ -18,5 +21,14 @@
   (define (EndPaint)
     (copy-viewport portMemory portDisplay))
   
+  (define (Implements? ClassDef)
+    (eq? ClassDef 'SimpleGUIManager))
   
-  
+  (λ msg
+    (if (null? msg)
+        (top)
+        (case (car msg)
+          ('BeginPaint (BeginPaint (GetParam msg 0)))
+          ('EndPaint (EndPaint))
+          ('Implements? (Implements? (GetParam msg 0)))
+          (else (error 'SimpleGUIManager "message not understood: ~S" (car msg)))))))
