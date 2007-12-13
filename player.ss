@@ -2,6 +2,7 @@
 
 (define (Player Name GRules DrawerClass)
   (define hand (CardSet))
+  (define UI (DrawerClass GRules))
   
   (define (ReceiveCard card)
     (hand 'add-card! card))
