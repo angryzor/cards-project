@@ -2,6 +2,7 @@
 
 (define (HumanPlayer Name GRules DrawerClass)
   (define plyr (Player GameManager DrawerClass))
+  (define UI (DrawerClass GRules))
   
   (define (DisplayUpdate)
     )

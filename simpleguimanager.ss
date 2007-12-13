@@ -1,4 +1,4 @@
-(load "guicarddrawer.ss")
+(load "simpleguicarddrawer.ss")
 
 (define (SimpleGUIManager vpName width height)
   (define portDisplay (open-viewport vpName width height))

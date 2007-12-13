@@ -10,8 +10,6 @@
                    (iter (+ n 1) (cdr names) (cdr PlayerClasses)))))
       (iter 0 PlayerNames))
     
-      (if (not (ObjectOfType? 'Player (PlayerClass)))
-          (error 'GameManager.Constructor "PlayerClass is not a valid subclass of Player (given: ~S)" i (vector-ref Players i)))
       (GRules 'InitPlayers (CreatePlayers (make-vector (length PlayerNames)))))
   
   (InitGameRules))
