@@ -74,7 +74,8 @@
 
 ;(open-graphics)
 ;(define a (open-viewport "Port" 800 600))
-;(define b (SimpleGUICardDrawer a))
+;(define d (open-pixmap "PortOffScr" 800 600))
+;(define b (SimpleGUICardDrawer d))
 ;(define c (CardStack))
 ;(c 'push! (Card 'klaveren 3 (λ (x y) 0)))
 ;(c 'push! (Card 'klaveren 3 (λ (x y) 0)))
@@ -84,3 +85,4 @@
 ;(c 'push! (Card 'klaveren 3 (λ (x y) 0)))
 ;(c 'push! (Card 'klaveren 3 (λ (x y) 0)))
 ;(b 'DrawCardStack c 50 50)
+;(copy-viewport d a)
