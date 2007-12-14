@@ -24,6 +24,9 @@
   (define (get-card card)
     (plst 'find card))
   
+  (define (length)
+    (plst 'length)) 
+  
   (define (Implements? ClassDef)
     (eq? ClassDef 'CardSet))
   
@@ -36,5 +39,6 @@
           ('copyToPosList (copyToPosList))
           ('toPosList (toPosList))
           ('get-card (get-card (GetParam msg 0)))
+          ('length (length))
           ('Implements? (Implements? (GetParam msg 0)))
           (else (error 'CardSet "message not understood: ~S" (car msg)))))))

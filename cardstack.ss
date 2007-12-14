@@ -53,10 +53,4 @@
           ('Implements? (Implements? (GetParam msg 0)))
           (else (apply stck msg))))))
 
-;DEBUG
-(define tst (CardStack))
-(tst 'push! 3)
-(tst 'push! 4)
-(tst 'push! 5)
-(tst 'push! 6)
-tst
+
