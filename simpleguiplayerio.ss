@@ -56,6 +56,8 @@
   (define (Draw)
     (let ((nump (GRules 'NumPlayers)))
       (define (DrawPlayers i)
+        (define (BackForce?)
+          (not (= i ThisPlayer)))
         (if (not (= i nump))
             (begin
               (cd 'DrawCardSet
@@ -65,7 +67,8 @@
                   (if (eq? ((vector-ref positions i) 'evo) 'horizontal)
                       maxHSetWidth
                       maxVSetHeight)
-                  ((vector-ref positions i) 'evo))
+                  ((vector-ref positions i) 'evo)
+                  (BackForce?))
               (DrawPlayers (+ i 1)))))
       (DrawPlayers 0)))
   

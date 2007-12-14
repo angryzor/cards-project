@@ -1,5 +1,8 @@
 ; ADT CardStack
 ;================================================
+; Het Knuth Shuffle algoritme is ontworpen door Mark Knuth. (gevonden op wikipedia)
+; De implementatie ervan is mijn eigen werk
+;
 (load "stack.ss")
 (require (lib "trace.ss"))
 
