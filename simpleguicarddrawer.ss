@@ -36,9 +36,10 @@
     (if (ObjectOfType? 'CardSet set)
         (let ((lst (set 'toPosList)))
           (define (BackForce x)
-            (cond ((null? forcefacedown) x)
+            (cond ((null? forcefacedown) (lst 'value x))
                   ((car forcefacedown) '())
-                  (else x)))
+                  ((set 'faceUp?) (lst 'value x))
+                  (else '())))
           (define (CalcHorizSpace)
             (min (quotient (- maxevosize 71) (- (lst 'length) 1))
                  14))
@@ -46,7 +47,7 @@
             (min (quotient (- maxevosize 96) (- (lst 'length) 1))
                  20))
           (define (DrawNextCard pos x y)
-            (DrawCard (BackForce (lst 'value pos)) x y)
+            (DrawCard (BackForce pos) x y)
             (if (lst 'has-next? pos)
                 (if (eq? evolvedirection 'horizontal)
                     (DrawNextCard (lst 'next pos) (+ x (CalcHorizSpace)) y)
@@ -64,7 +65,9 @@
     (if (ObjectOfType? 'CardStack stack)
         (begin
           (DrawNextBack 8 x (+ y 9))
-          (DrawCard (stack 'top) (+ x 8) (+ y 1)))
+          (DrawCard (if (stack 'faceUp?)
+                        (stack 'top)
+                        '()) (+ x 8) (+ y 1)))
         (error 'SimpleGUICardDrawer.DrawCardStack "expects type <CardStack> as 1st argument, given: ~S" stack)))
   
   (λ msg

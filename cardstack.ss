@@ -65,6 +65,7 @@
           ('shuffle (shuffle))
           ('flipDown (flipDown))
           ('flipUp (flipUp))
+          ('faceUp? up?)
           ('Implements? (Implements? (GetParam msg 0)))
           (else (apply stck msg))))))
 

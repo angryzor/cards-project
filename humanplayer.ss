@@ -34,7 +34,7 @@
 (define c (Player 'Nick a SimpleGUIManager))
 (define d (HumanPlayer 'Dries a SimpleGUIManager))
 (define e (Player 'David a SimpleGUIManager))
-(define f (CardStack))
+(define f (CardStack #f))
 (define g (CardSet))
 (a 'InitPlayers (vector b c d e))
 (b 'Init)

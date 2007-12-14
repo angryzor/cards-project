@@ -51,5 +51,6 @@
           ('length (length))
           ('flipDown (flipDown))
           ('flipUp (flipUp))
+          ('faceUp? up?)
           ('Implements? (Implements? (GetParam msg 0)))
           (else (error 'CardSet "message not understood: ~S" (car msg)))))))
