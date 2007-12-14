@@ -4,14 +4,14 @@
   (define plst (position-list eq?))
   
   (define (add! container)
-    (if (ObjectOfType? 'CardContainer container)
+    (if (or (ObjectOfType? 'CardStack container) (ObjectOfType? 'CardSet container))
         (plst 'add-after! container)
-        (error 'CardTable.add! "expects type <CardContainer> as first argument, given: ~S" container)))
+        (error 'CardTable.add! "expects type <CardStack> U <CardSet> as first argument, given: ~S" container)))
   
   (define (remove! container)
-    (if (ObjectOfType? 'CardContainer container)
+    (if (or (ObjectOfType? 'CardStack container) (ObjectOfType? 'CardSet container))
         (plst 'delete! (plst.find container))
-        (error 'CardTable.add! "expects type <CardContainer> as first argument, given: ~S" container)))
+        (error 'CardTable.add! "expects type <CardStack> U <CardSet> as first argument, given: ~S" container)))
   
   (define (toPosList)
     plst)

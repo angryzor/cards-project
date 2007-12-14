@@ -3,8 +3,11 @@
 (load "stack.ss")
 (require (lib "trace.ss"))
 
-(define (CardStack)
+(define (CardStack . up??)
   (define stck (Stack))
+  (define up? (if (null? up??)
+                  #t
+                  (car up??)))
   ;*******************************************************
   ; function shuffle
   ; -> Shuffles the deck
@@ -36,7 +39,14 @@
      (knuth_shuffle
       (list->vector
        (popall!))) 0))
-  ;*****************************************************************
+
+  (define (flipDown)
+    (set! up? #f))
+  
+  (define (flipUp)
+    (set! up? #t))
+  
+;*****************************************************************
   ; function Implements?
   ;
   ; @params: ClassDef (symbol)
@@ -50,6 +60,8 @@
         (stck)
         (case (car msg)
           ('shuffle (shuffle))
+          ('flipDown (flipDown))
+          ('flipUp (flipUp))
           ('Implements? (Implements? (GetParam msg 0)))
           (else (apply stck msg))))))
 

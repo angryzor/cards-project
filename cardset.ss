@@ -1,8 +1,11 @@
 (load "double-linked-position-list.ss")
 
-(define (CardSet)
+(define (CardSet . up??)
   (define (Card-ComparisonCaller x y)
     (x '=? y))
+  (define up? (if (null? up??)
+                  #t
+                  (car up??)))
   (define plst (position-list Card-ComparisonCaller))
   
   (define (add! card)
@@ -27,6 +30,12 @@
   (define (length)
     (plst 'length)) 
   
+  (define (flipDown)
+    (set! up? #f))
+  
+  (define (flipUp)
+    (set! up? #t))
+  
   (define (Implements? ClassDef)
     (eq? ClassDef 'CardSet))
   
@@ -40,5 +49,7 @@
           ('toPosList (toPosList))
           ('get-card (get-card (GetParam msg 0)))
           ('length (length))
+          ('flipDown (flipDown))
+          ('flipUp (flipUp))
           ('Implements? (Implements? (GetParam msg 0)))
           (else (error 'CardSet "message not understood: ~S" (car msg)))))))

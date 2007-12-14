@@ -1,12 +1,29 @@
+(load "cardtable.ss")
+
 (define (GameRules)
   (define Players '())
+  (define Table (CardTable))
   
   (define (InitPlayers plyrs)
     (set! Players plyrs)
-    (CheckPlayers))
+    ;(CheckPlayers)
+    )
   
   (define (GetPlayer x)
     (vector-ref Players x))
+  
+  (define (GetPlayerIndex x)
+    (define (iter i)
+      (cond ((= i (vector-length Players)) (error 'GameRules.Constructor "Player not found"))
+            ((eq? x (vector-ref Players i)) i)
+            (else (iter (+ i 1)))))
+    (iter 0))
+  
+  (define (NumPlayers)
+    (vector-length Players))
+  
+  (define (GetTable)
+    Table)
   
   (define (Implements? ClassDef)
     (eq? ClassDef 'GameRules))
@@ -24,5 +41,8 @@
         (case (car msg)
           ('InitPlayers (InitPlayers (GetParam msg 0)))
           ('GetPlayer (GetPlayer (GetParam msg 0)))
+          ('GetPlayerIndex (GetPlayerIndex (GetParam msg 0)))
+          ('NumPlayers (NumPlayers))
+          ('GetTable (GetTable))
           ('Implements? (Implements? (GetParam msg 0)))
           (else (error 'GameRules "message not understood: ~S" (car msg)))))))

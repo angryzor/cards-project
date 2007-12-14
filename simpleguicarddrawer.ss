@@ -32,7 +32,7 @@
         (mydraw-pixmap (GetPath) (make-posn x y))
         (error 'SimpleGUICardDrawer.DrawCard "expects type <Card> as 1st argument, given: ~S" card)))
   
-  (define (DrawCardSet set x y maxevosize evolvedirection)
+  (define (DrawCardSet set x y maxevosize evolvedirection . forcefacedown) ;forcefacedown for players
     (if (ObjectOfType? 'CardSet set)
         (let ((lst (set 'toPosList)))
           (define (CalcHorizSpace)
@@ -49,7 +49,7 @@
                     (DrawNextCard (lst 'next pos) x (+ y (CalcVertSpace))))))
           (if (not (lst 'empty?))
               (DrawNextCard (lst 'first-position) x y)))
-        (error 'SimpleGUICardDrawer.DrawCardSet "expects type <CardSet> as 1st argument, given: ~S" card)))
+        (error 'SimpleGUICardDrawer.DrawCardSet "expects type <CardSet> as 1st argument, given: ~S" set)))
   
   (define (DrawCardStack stack x y)
     (define (DrawNextBack n x y)
@@ -61,14 +61,14 @@
         (begin
           (DrawNextBack 8 x (+ y 9))
           (DrawCard (stack 'top) (+ x 8) (+ y 1)))
-        (error 'SimpleGUICardDrawer.DrawCardStack "expects type <CardStack> as 1st argument, given: ~S" card)))
+        (error 'SimpleGUICardDrawer.DrawCardStack "expects type <CardStack> as 1st argument, given: ~S" stack)))
   
   (λ msg
     (if (null? msg)
         (error 'SimpleGUICardDrawer "object requires a message")
         (case (car msg)
           ('DrawCard (DrawCard (GetParam msg 0) (GetParam msg 1) (GetParam msg 2)))
-          ('DrawCardSet (DrawCardSet (GetParam msg 0) (GetParam msg 1) (GetParam msg 2) (GetParam msg 3) (GetParam msg 4)))
+          ('DrawCardSet (apply DrawCardSet (GetParam msg 0) (GetParam msg 1) (GetParam msg 2) (GetParam msg 3) (GetParam msg 4) (cdddr (cdddr msg))))
           ('DrawCardStack (DrawCardStack (GetParam msg 0) (GetParam msg 1) (GetParam msg 2)))
           (else (error 'Player "message not understood: ~S" (car msg)))))))
 
