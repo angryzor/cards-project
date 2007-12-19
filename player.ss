@@ -19,6 +19,9 @@
     (hand 'delete! card)
     card)
   
+  (define (HasCard? card)
+    (not (= (hand 'get-card card) #f)))
+  
   (define (getHand)
     hand)
   
@@ -33,6 +36,7 @@
           ('TableChanged (TableChanged))
           ('ReceiveCard (ReceiveCard (GetParam msg 0)))
           ('DiscardCard (DiscardCard (GetParam msg 0)))
+          ('HasCard? (HasCard? (GetParam msg 0)))
           ('getHand (getHand))
           ('DisplayUpdate (DisplayUpdate))
           ('Implements? (Implements? (GetParam msg 0)))
