@@ -7,6 +7,7 @@
         (case (car msg)
           ('DisplayUpdate (DisplayUpdate))
           ('Init (Init))
+          ('GetClick (UI 'GetClick))
           ('TableChanged (TableChanged))
           (else (apply plyr msg)))))
   
@@ -112,4 +113,4 @@
   (d 'DisplayUpdate)
   (e 'DisplayUpdate)
   (UpdRec))
-(UpdRec)
+;(UpdRec)

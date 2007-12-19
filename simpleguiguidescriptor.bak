@@ -1,0 +1,17 @@
+(define (SimpleGUIGUIDescriptor vpWindow
+                                vpMem
+                                vpWidth
+                                vpHeight
+                                maxHSetWidth
+                                maxVSetHeight
+                                tableEvolveDirection
+                                cardWidth
+                                cardHeight)
+  (λ msg
+    (if (null? msg)
+        (error 'SimpleGUIPlayerIO "object requires a message")
+        (case (car msg)
+          ('Init (Init))
+          ('Draw (Draw))
+          ('Implements? (Implements? (GetParam msg 0)))
+          (else (error 'SimpleGUIGUIDescriptor "message not understood: ~S" (car msg)))))))    

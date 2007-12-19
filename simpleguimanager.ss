@@ -3,14 +3,14 @@
 
 (define (SimpleGUIManager GRules ThisPlayer)
   (define vpName "Card Game")
-  (define width 1024)
-  (define height 768)
-  (define cardWidth 71)
-  (define cardHeight 96)
   (open-graphics)
   
   (let* ((portDisplay (open-viewport vpName width height))
          (portMemory (open-pixmap (string-append vpName "OffScreen") width height))
+         (guidesc (SimpleGUIGUIDescriptor portDisplay
+                                          portMemory
+                                          1024
+                                          768)
          (tableio (SimpleGUITableIO portMemory
                                     (GRules 'GetTable)
                                     (+ cardWidth 20)
@@ -21,7 +21,7 @@
                                       GRules
                                       ThisPlayer
                                       width
-                                      height)))
+                                      height))
 ;    (define in (SimpleGUIInput))
     
     ;***********************************************************
@@ -61,5 +61,6 @@
             ('TableChanged (TableChanged))
             ('DisplayUpdate (DisplayUpdate))
             ('Init (Init))
+            ('GetClick (tableio 'GetClickWait))
             ('Implements? (Implements? (GetParam msg 0)))
             (else (error 'SimpleGUIManager "message not understood: ~S" (car msg))))))))
