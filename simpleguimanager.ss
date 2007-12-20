@@ -1,28 +1,37 @@
+(load "simpleguiguidescriptor.ss")
 (load "simpleguitableio.ss")
 (load "simpleguiplayerio.ss")
 
 (define (SimpleGUIManager GRules ThisPlayer)
   (define vpName "Card Game")
+  (define width 1024)
+  (define height 768)
   (open-graphics)
   
   (let* ((portDisplay (open-viewport vpName width height))
          (portMemory (open-pixmap (string-append vpName "OffScreen") width height))
          (guidesc (SimpleGUIGUIDescriptor portDisplay
                                           portMemory
-                                          1024
-                                          768)
-         (tableio (SimpleGUITableIO portMemory
-                                    (GRules 'GetTable)
-                                    (+ cardWidth 20)
-                                    (+ cardHeight 10)
-                                    (- width cardWidth 20)
-                                    (- height cardHeight 10)))
-         (playerio (SimpleGUIPlayerIO portMemory
-                                      GRules
+                                          portMemory
+                                          width
+                                          height
+                                          300
+                                          250
+                                          91
+                                          106
+                                          933
+                                          662
+                                          71
+                                          96
+                                          80
+                                          105
+                                          14
+                                          20))
+         (tableio (SimpleGUITableIO (GRules 'GetTable)
+                                    guidesc))
+         (playerio (SimpleGUIPlayerIO GRules
                                       ThisPlayer
-                                      width
-                                      height))
-;    (define in (SimpleGUIInput))
+                                      guidesc)))
     
     ;***********************************************************
     ; Viewport operations shortened                            *
@@ -61,6 +70,7 @@
             ('TableChanged (TableChanged))
             ('DisplayUpdate (DisplayUpdate))
             ('Init (Init))
-            ('GetClick (tableio 'GetClickWait))
+            ('GetTableSelect (tableio 'GetClickWait))
+            ('GetPlayerOwnCardsSelect (playerio 'GetOwnClickWait))
             ('Implements? (Implements? (GetParam msg 0)))
             (else (error 'SimpleGUIManager "message not understood: ~S" (car msg))))))))

@@ -16,8 +16,9 @@
     (hand 'add! card))
   
   (define (DiscardCard card)
-    (hand 'delete! card)
-    card)
+    (if (hand 'delete! card)
+        card
+        #f))
   
   (define (HasCard? card)
     (not (= (hand 'get-card card) #f)))

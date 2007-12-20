@@ -15,7 +15,10 @@
   
   (define (delete! card)
     (if (ObjectOfType? 'Card card)
-        (plst 'delete! (plst 'find card))
+        (let ((crd (plst 'find card)))
+          (if crd
+              (plst 'delete! crd)
+              #f))
         (error 'CardSet.delete! "expects type <Card> as argument, given: ~S" card)))
   
   (define (copyToPosList)

@@ -1,7 +1,43 @@
 (load "cardset.ss")
 
-(define (Player GameManager)
+(define (Player Name GRules DrawerClass)
   (define hand (CardSet))
   
-  (define (GetCard card)
-    (hand 'add-card! card))
+  (define (Init)
+    #t)
+  
+  (define (TableChanged)
+    #t)
+  
+  (define (DisplayUpdate)
+    #t)
+  
+  (define (ReceiveCard card)
+    (hand 'add! card))
+  
+  (define (DiscardCard card)
+    (hand 'delete! card)
+    card)
+  
+  (define (HasCard? card)
+    (not (= (hand 'get-card card) #f)))
+  
+  (define (getHand)
+    hand)
+  
+  (define (Implements? ClassDef)
+    (eq? ClassDef 'Player))
+  
+  (λ msg
+    (if (null? msg)
+        (error 'Player "object requires a message")
+        (case (car msg)
+          ('Init (Init))
+          ('TableChanged (TableChanged))
+          ('ReceiveCard (ReceiveCard (GetParam msg 0)))
+          ('DiscardCard (DiscardCard (GetParam msg 0)))
+          ('HasCard? (HasCard? (GetParam msg 0)))
+          ('getHand (getHand))
+          ('DisplayUpdate (DisplayUpdate))
+          ('Implements? (Implements? (GetParam msg 0)))
+          (else (error 'Player "message not understood: ~S" (car msg)))))))
