@@ -1,0 +1,22 @@
+(define (DeckGenerator cardcmp)
+  (define curVal 0)
+  (define curCol 'schoppen)
+  
+  (define (nextColor)
+    (case curCol
+      ('schoppen 'ruiten)
+      ('ruiten 'klaveren)
+      ('klaveren 'harten)
+      (else 'schoppen)))
+  
+  (define (nextCard)
+    (let ((tcv curVal)
+          (tcc curCol))
+      (set! curVal (+ curVal 1))
+      (if (> curVal 13)
+          (begin (set! curCol (nextColor))
+                 (set! curVal 0)))
+      (Card tcc tcv cardcmp)))
+  
+  (define (joker)
+    (Card 'joker 0 cardcmp)))
