@@ -65,6 +65,8 @@
   (if (> n 0)
       (begin (f 'push! (deckgen 'NextCard))
              (loop (- n 1)))))
+(f 'push! (deckgen 'Joker))
+(f 'push! (deckgen 'Joker))
 (f 'shuffle)
 
 (let loop ((n 13))
