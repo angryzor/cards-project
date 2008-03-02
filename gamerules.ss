@@ -4,8 +4,16 @@
   (define Players '())
   (define Table (CardTable))
   
+  (define (SendToAllPlayers msg . args)
+    (define (iter i)
+      (if (< i (NumPlayers))
+          (begin (apply (GetPlayer i) msg args)
+                 (iter (+ i 1)))))
+    (iter 0))
+  
   (define (InitPlayers plyrs)
     (set! Players plyrs)
+    (SendToAllPlayers 'Init)
     ;(CheckPlayers)
     )
   
@@ -14,8 +22,8 @@
   
   (define (GetPlayerIndex x)
     (define (iter i)
-      (cond ((= i (vector-length Players)) (error 'GameRules.Constructor "Player not found"))
-            ((eq? x (vector-ref Players i)) i)
+      (cond ((= i (NumPlayers)) (error 'GameRules.Constructor "Player not found"))
+            ((eq? x (GetPlayer i)) i)
             (else (iter (+ i 1)))))
     (iter 0))
   
@@ -44,5 +52,6 @@
           ('GetPlayerIndex (GetPlayerIndex (GetParam msg 0)))
           ('NumPlayers (NumPlayers))
           ('GetTable (GetTable))
+          ('SendToAllPlayers (apply SendToAllPlayers (cdr msg)))
           ('Implements? (Implements? (GetParam msg 0)))
           (else (error 'GameRules "message not understood: ~S" (car msg)))))))

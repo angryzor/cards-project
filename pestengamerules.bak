@@ -1,0 +1,8 @@
+(load "gamerules.ss")
+
+(define (PestenGameRules)
+  (define Rules (GameRules))
+  (define CurrentTurn 0) ; index into players indicating which player is next.
+  (define (NextTurn shift)
+    (remainder (+ CurrentTurn shift) (Rules 'NumPlayers)))
+  (define 

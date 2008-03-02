@@ -81,6 +81,10 @@
   (define (>=? Other)
     (let ((cmpres (==? (Card color value ==?) Other)))
       (or (= cmpres 0) (= cmpres 1))))
+  
+  (define (my-equal? Other)
+    (and (eq? color (Other 'Color))
+         (= value (Other 'Value))))
   ;*****************************************************************
   ; function Implements?
   ;
@@ -108,5 +112,6 @@
           ('>? (>? (GetParam msg 0)))
           ('<=? (<=? (GetParam msg 0)))
           ('>=? (>=? (GetParam msg 0)))
+          ('equal? (my-equal? (GetParam msg 0)))
           ('Implements? (Implements? (GetParam msg 0)))
           (else (error 'Card "message not understood: ~S" (car msg)))))))

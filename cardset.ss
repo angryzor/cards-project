@@ -2,7 +2,7 @@
 
 (define (CardSet . up??)
   (define (Card-ComparisonCaller x y)
-    (x '=? y))
+    (x 'equal? y))
   (define up? (if (null? up??)
                   #t
                   (car up??)))

@@ -1,9 +1,7 @@
 (load "humanplayer.ss")
-(load "gamerules.ss")
 (load "simpleguimanager.ss")
 
-(define (GameManager PlayerNames PlayerClasses DrawerClass)
-  (define GRules (GameRules))
+(define (GameManager GRules PlayerNames PlayerClasses DrawerClass)
   
   (define (InitGameRules)
     (define (CreatePlayers vec)
@@ -24,3 +22,8 @@
         (case (car msg)
           ('GetGameRules GRules)
           (else (error 'GameRules "message not understood: ~S" (car msg)))))))
+
+(load "pestengamerules.ss")
+(define b (PestenGameRules))
+(define a (GameManager b '(Ruben Sander) (list HumanPlayer HumanPlayer) SimpleGUIManager))
+(b 'RunRules)

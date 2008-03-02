@@ -23,6 +23,9 @@
   (define (HasCard? card)
     (not (= (hand 'get-card card) #f)))
   
+  (define (NumberCards)
+    (hand 'length))
+  
   (define (getHand)
     hand)
   
@@ -38,6 +41,7 @@
           ('ReceiveCard (ReceiveCard (GetParam msg 0)))
           ('DiscardCard (DiscardCard (GetParam msg 0)))
           ('HasCard? (HasCard? (GetParam msg 0)))
+          ('NumberCards (NumberCards))
           ('getHand (getHand))
           ('DisplayUpdate (DisplayUpdate))
           ('Implements? (Implements? (GetParam msg 0)))
