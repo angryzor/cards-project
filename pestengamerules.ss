@@ -86,12 +86,14 @@
         (cond ((PlayStack 'empty?) (error 'PestenGameRules.ValidMove.@TakeOffCardsTillFirstNormal "No normal cards on stack!"))
               ((IsJoker? (PlayStack 'top)) (begin (tmpstck 'push! (PlayStack 'pop!))
                                                    (TakeOffCardsTillFirstNormal)))
-              (ColorAlteration ((Card ColorAlteration 1) '=? crd))
+              (ColorAlteration ((Card ColorAlteration 1 CardCompare) '=? crd))
               (else ((PlayStack 'top) '=? crd))))
       
-      (let ((res (TakeOffCardsTillFirstNormal)))
-        (PlaceCardsBackOn)
-        res)))
+      (if crd
+          (let ((res (TakeOffCardsTillFirstNormal)))
+            (PlaceCardsBackOn)
+            res)
+          #f)))
   
   
   (define (DoCardSpecialAction crd)
