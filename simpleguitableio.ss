@@ -1,4 +1,4 @@
-(load "tableselectedcard.ss")
+(load "origincardpair.ss")
 (load "simpleguicarddrawer.ss")
 
 (define (SimpleGUITableIO table guidesc)
@@ -63,16 +63,14 @@
         #f
         (iter (posnlst 'first-position) (poslst 'first-position))))
   
-  (define (GetClickWait)
+  (define (GetClick c-posn)
     (let* ((poslst (table 'toPosList))
-           (mclick (get-mouse-click (guidesc 'ViewPortWindow)))
-           (c-posn (mouse-click-posn mclick))
            (cont (find-container c-posn positions poslst)))
       (if cont
           (let ((tbval ((car cont) 'value)))
             (if (ObjectOfType? 'CardStack tbval)
-                (TableSelectedCard tbval (tbval 'top))
-                (TableSelectedCard tbval ((cd 'FindCardOffset (tbval 'toPosList) c-posn ((cadr cont) 'value) 'vertical) 'value))))
+                (OriginCardPair tbval (tbval 'top))
+                (OriginCardPair tbval ((cd 'FindCardOffset (tbval 'toPosList) c-posn ((cadr cont) 'value) 'vertical) 'value))))
           #f)))
   
   (define (Draw)
@@ -101,6 +99,6 @@
         (case (car msg)
           ('Recalculate (Recalculate))
           ('Draw (Draw))
-          ('GetClickWait (GetClickWait))
+          ('GetClick (GetClick (GetParam msg 0)))
           ('Implements? (Implements? (GetParam msg 0)))
           (else (error 'SimpleGUITableIO "message not understood: ~S" (car msg)))))))

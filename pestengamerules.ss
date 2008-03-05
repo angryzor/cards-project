@@ -7,13 +7,13 @@
   (define TakeStack (CardStack #f))
   (define PlayStack (CardStack #t))
   (define ColorAlteration #f)
-
-; Used to shift turns
-
+  
+  ; Used to shift turns
+  
   (define (Turn shift)
     (modulo (+ CurrentTurn shift) (Rules 'NumPlayers)))
   
-;Card comparison func
+  ;Card comparison func
   (define (CardCompare crd1 crd2)
     (if (or (eq? (crd1 'Color) (crd2 'Color))
             (= (crd1 'Value) (crd2 'Value))
@@ -24,7 +24,7 @@
         Card.CARD_EQUAL
         Card.CARD_HIGHER)) ; We don't care whether it's higher or lower. It doesn't matter in this game.
   
-; HELPER FUNCS
+  ; HELPER FUNCS
   
   (define (IsJoker? crd)
     (eq? (crd 'Color) 'Joker))
@@ -33,10 +33,10 @@
     (if (> n 0)
         (begin (plyr 'ReceiveCard (TakeStack 'pop!))
                (GivePlayerCardsFromTakeStack plyr (- n 1)))))
-
   
-;INIT FUNCS
-;Creates cards
+  
+  ;INIT FUNCS
+  ;Creates cards
   
   (define (InitTable)
     ((Rules 'GetTable) 'add! TakeStack)
@@ -52,7 +52,16 @@
       (TakeStack 'push! (deckgen 'Joker))
       (TakeStack 'push! (deckgen 'Joker))))
   
-; Deals cards
+  ; Deals cards
+  
+  (define (RetryTillNoJoker crd)
+    (define (rec crd)
+      (if (crd '=? (Card 'Joker 0 CardCompare))
+          (let ((res (RetryTillNoJoker (TakeStack 'pop!))))
+            (TakeStack 'push! crd)
+            res)
+          crd))
+    (rec crd))
   
   (define (DealCards)
     (TakeStack 'shuffle)
@@ -63,7 +72,7 @@
                        (begin (GivePlayerCardsFromTakeStack (Rules 'GetPlayer plyr) 1)
                               (loop2 (- plyr 1)))))
                  (loop (- n 1)))))
-    (PlayStack 'push! (TakeStack 'pop!)))
+    (PlayStack 'push! (RetryTillNoJoker (TakeStack 'pop!))))
   
   (define (CheckIfAPlayerHasNoCards)
     (define (iter plyr)
@@ -72,8 +81,23 @@
             (else (iter (- plyr 1)))))
     (iter (- (Rules 'NumPlayers) 1)))
   
-; GAMEPLAY FUNCS
-    
+  ; GAMEPLAY FUNCS
+  
+  (define (OriginatesFromCurrentPlayer crdsel)
+    (eq? (crdsel 'Origin) ((Rules 'GetPlayer CurrentTurn) 'getHand)))
+  
+  (define (OriginatesFromTakeStack crdsel)
+    (eq? (crdsel 'Origin) TakeStack))
+  
+  (define (PlayerHasNoValidCards plyr)
+    (let ((lst ((plyr 'getHand) 'toPosList)))
+      (define (iter pos)
+        (cond ((and (lst 'has-next? pos)
+                    (ValidMove (lst 'value pos))) (iter (lst 'next pos)))
+              (else (not (lst 'has-next? pos)))))
+      (iter (lst 'first-position))))
+  
+  
   (define (ValidMove crd)
     (let ((tmpstck (CardStack)))
       
@@ -85,15 +109,13 @@
       (define (TakeOffCardsTillFirstNormal)
         (cond ((PlayStack 'empty?) (error 'PestenGameRules.ValidMove.@TakeOffCardsTillFirstNormal "No normal cards on stack!"))
               ((IsJoker? (PlayStack 'top)) (begin (tmpstck 'push! (PlayStack 'pop!))
-                                                   (TakeOffCardsTillFirstNormal)))
+                                                  (TakeOffCardsTillFirstNormal)))
               (ColorAlteration ((Card ColorAlteration 1 CardCompare) '=? crd))
               (else ((PlayStack 'top) '=? crd))))
       
-      (if crd
-          (let ((res (TakeOffCardsTillFirstNormal)))
-            (PlaceCardsBackOn)
-            res)
-          #f)))
+      (let ((res (TakeOffCardsTillFirstNormal)))
+        (PlaceCardsBackOn)
+        res)))
   
   
   (define (DoCardSpecialAction crd)
@@ -109,27 +131,43 @@
       ((8) (Turn 2))
       (else (Turn 1))))
   
-  (define (WaitForValidMove)
-    (let ((crdsel ((Rules 'GetPlayer CurrentTurn) 'GetPlayerOwnCardsSelect)))
-      (if (ValidMove crdsel)
-          crdsel
-          (WaitForValidMove))))
+  (define (WaitForValidMove noTakeStackOrigin)
+    (let ((crdsel ((Rules 'GetPlayer CurrentTurn) 'GetSelect)))
+      (cond ((not crdsel) (WaitForValidMove))
+            ((and (OriginatesFromCurrentPlayer crdsel)
+                  (ValidMove (crdsel 'Card))) crdsel)
+            ((and (not noTakeStackOrigin)
+                  (OriginatesFromTakeStack crdsel)) crdsel)
+            (else (WaitForValidMove noTakeStackOrigin)))))
   
-  (define (ProcessTurn)
-    (let ((crd (WaitForValidMove)))
-      (DoCardSpecialAction crd)
-      (PlayStack 'push! ((Rules 'GetPlayer CurrentTurn) 'DiscardCard crd))
-      (set! CurrentTurn (CalcNewTurn crd)))
-    (Rules 'SendToAllPlayers 'DisplayUpdate)
+  (define (ProcessTurn afterTaking)
+    (if (and afterTaking
+             (PlayerHasNoValidCards (Rules 'GetPlayer CurrentTurn)))
+        (set! CurrentTurn (Turn 1))
+        (let ((crdsel (WaitForValidMove afterTaking)))
+          (if (OriginatesFromTakeStack crdsel)
+              (begin ; Player takes card from stack
+                (GivePlayerCardsFromTakeStack (Rules 'GetPlayer CurrentTurn) 1)
+                (Rules 'SendToAllPlayers 'DisplayUpdate)
+                (ProcessTurn #t))
+              (begin ; Player plays card
+                (DoCardSpecialAction (crdsel 'Card))
+                (PlayStack 'push! ((Rules 'GetPlayer CurrentTurn) 'DiscardCard (crdsel 'Card)))
+                (set! CurrentTurn (CalcNewTurn (crdsel 'Card)))))))
+    (Rules 'SendToAllPlayers 'DisplayUpdate))
+  
+  (define (LoopThroughTurns)
+    (ProcessTurn #f)
     (if (not (CheckIfAPlayerHasNoCards))
-        (ProcessTurn)))
+        (LoopThroughTurns)))
   
   (define (RunRules)
     (InitTable)
     (CreateCards)
     (DealCards) ;Deal
     (Rules 'SendToAllPlayers 'DisplayUpdate)
-    (ProcessTurn))
+    (LoopThroughTurns)
+    (display "Game Ended"))
   
   (λ msg
     (if (null? msg)

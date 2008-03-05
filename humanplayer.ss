@@ -7,6 +7,7 @@
         (case (car msg)
           ('DisplayUpdate (DisplayUpdate))
           ('Init (Init))
+          ('GetSelect (UI 'GetSelect))
           ('GetTableSelect (UI 'GetTableSelect))
           ('GetPlayerOwnCardsSelect (UI 'GetPlayerOwnCardsSelect))
           ('TableChanged (TableChanged))

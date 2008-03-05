@@ -1,9 +1,9 @@
-(define (TableSelectedCard tableItem card)
+(define (OriginCardPair origin card)
   (λ msg
     (if (null? msg)
         (error 'SimpleGUIPlayerIO "object requires a message")
         (case (car msg)
-          ('TableItem tableItem)
+          ('Origin origin)
           ('Card card)
           ('Implements? (Implements? (GetParam msg 0)))
-          (else (error 'TableSelectedCard "message not understood: ~S" (car msg)))))))
+          (else (error 'OriginCardPair "message not understood: ~S" (car msg)))))))

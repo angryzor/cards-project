@@ -63,6 +63,10 @@
     (define (Init)
       (playerio 'Init))
     
+    (define (WaitForMouse)
+      (let ((mclick (get-mouse-click (guidesc 'ViewPortWindow))))
+        (mouse-click-posn mclick)))
+    
     (λ msg
       (if (null? msg)
           (error 'SimpleGUIManager "object requires a message")
@@ -70,7 +74,10 @@
             ('TableChanged (TableChanged))
             ('DisplayUpdate (DisplayUpdate))
             ('Init (Init))
-            ('GetTableSelect (tableio 'GetClickWait))
-            ('GetPlayerOwnCardsSelect (playerio 'GetOwnClickWait))
+            ('GetTableSelect (tableio 'GetClick (WaitForMouse)))
+            ('GetPlayerOwnCardsSelect (playerio 'GetOwnClick (WaitForMouse)))
+            ('GetSelect (let ((c-posn (WaitForMouse)))
+                          (or (tableio 'GetClick c-posn)
+                              (playerio 'GetOwnClick c-posn))))
             ('Implements? (Implements? (GetParam msg 0)))
             (else (error 'SimpleGUIManager "message not understood: ~S" (car msg))))))))

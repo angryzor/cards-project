@@ -44,5 +44,8 @@
           ('NumberCards (NumberCards))
           ('getHand (getHand))
           ('DisplayUpdate (DisplayUpdate))
+          ('GetSelect #f)
+          ('GetTableSelect #f)
+          ('GetPlayerOwnCardsSelect #f)
           ('Implements? (Implements? (GetParam msg 0)))
           (else (error 'Player "message not understood: ~S" (car msg)))))))

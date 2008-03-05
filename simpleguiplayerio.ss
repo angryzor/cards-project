@@ -1,4 +1,5 @@
 (load "simpleguicarddrawer.ss")
+(load "origincardpair.ss")
 
 (define (SimpleGUIPlayerIO GRules pThisPlayer guidesc)
   (define positions '())
@@ -67,12 +68,10 @@
               (DrawPlayers (+ i 1)))))
       (DrawPlayers 0)))
   
-  (define (GetOwnClickWait)
-    (let* ((mclick (get-mouse-click (guidesc 'ViewPortWindow)))
-           (c-posn (mouse-click-posn mclick))
-           (crdpos (cd 'FindCardOffset ((pThisPlayer 'getHand) 'toPosList) c-posn (make-posn (guidesc 'CardWidth) (- vpHeight (guidesc 'CardHeight))) 'horizontal)))
+  (define (GetOwnClick c-posn)
+    (let ((crdpos (cd 'FindCardOffset ((pThisPlayer 'getHand) 'toPosList) c-posn (make-posn (guidesc 'CardWidth) (- vpHeight (guidesc 'CardHeight))) 'horizontal)))
       (if crdpos
-          (crdpos 'value)
+          (OriginCardPair (pThisPlayer 'getHand) (crdpos 'value))
           #f)))
   
   (λ msg
@@ -80,7 +79,7 @@
         (error 'SimpleGUIPlayerIO "object requires a message")
         (case (car msg)
           ('Init (Init))
-          ('GetOwnClickWait (GetOwnClickWait))
+          ('GetOwnClick (GetOwnClick (GetParam msg 0)))
           ('Draw (Draw))
           ('Implements? (Implements? (GetParam msg 0)))
           (else (error 'SimpleGUIPlayerIO "message not understood: ~S" (car msg)))))))
