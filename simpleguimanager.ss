@@ -64,8 +64,8 @@
       (playerio 'Init))
     
     (define (WaitForMouse)
-      (let ((mclick (get-mouse-click (guidesc 'ViewPortWindow))))
-        (mouse-click-posn mclick)))
+      (viewport-flush-input (guidesc 'ViewPortWindow))
+      (mouse-click-posn (get-mouse-click (guidesc 'ViewPortWindow))))
     
     (λ msg
       (if (null? msg)

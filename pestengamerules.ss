@@ -7,6 +7,7 @@
   (define TakeStack (CardStack #f))
   (define PlayStack (CardStack #t))
   (define ColorAlteration #f)
+  (define turnDir 1)
   
   ; Used to shift turns
   
@@ -19,19 +20,28 @@
             (= (crd1 'Value) (crd2 'Value))
             (= (crd1 'Value) 11)
             (= (crd2 'Value) 11)
-            (eq? (crd1 'Value) 'Joker)
-            (eq? (crd2 'Value) 'Joker))
+            (eq? (crd1 'Color) 'joker)
+            (eq? (crd2 'Color) 'joker))
         Card.CARD_EQUAL
         Card.CARD_HIGHER)) ; We don't care whether it's higher or lower. It doesn't matter in this game.
   
   ; HELPER FUNCS
   
   (define (IsJoker? crd)
-    (eq? (crd 'Color) 'Joker))
+    (eq? (crd 'Color) 'joker))
   
   (define (GivePlayerCardsFromTakeStack plyr n)
+    (define (MovePlayStackToTakeStack)
+      (if (not (PlayStack 'empty?))
+          (begin (TakeStack 'push! (PlayStack 'pop!))
+                 (MovePlayStackToTakeStack))))
     (if (> n 0)
-        (begin (plyr 'ReceiveCard (TakeStack 'pop!))
+        (begin (if (TakeStack 'empty?)
+                   (let ((topcard (PlayStack 'pop!)))
+                     (MovePlayStackToTakeStack)
+                     (PlayStack 'push! topcard)
+                     (TakeStack 'shuffle)))
+               (plyr 'ReceiveCard (TakeStack 'pop!))
                (GivePlayerCardsFromTakeStack plyr (- n 1)))))
   
   
@@ -56,7 +66,7 @@
   
   (define (RetryTillNoJoker crd)
     (define (rec crd)
-      (if (crd '=? (Card 'Joker 0 CardCompare))
+      (if (crd 'equal? (Card 'joker 0 CardCompare))
           (let ((res (RetryTillNoJoker (TakeStack 'pop!))))
             (TakeStack 'push! crd)
             res)
@@ -92,9 +102,9 @@
   (define (PlayerHasNoValidCards plyr)
     (let ((lst ((plyr 'getHand) 'toPosList)))
       (define (iter pos)
-        (cond ((and (lst 'has-next? pos)
-                    (ValidMove (lst 'value pos))) (iter (lst 'next pos)))
-              (else (not (lst 'has-next? pos)))))
+        (cond ((ValidMove (lst 'value pos)) #f)
+              ((not (lst 'has-next? pos)) #t)
+              (else (iter (lst 'next pos)))))
       (iter (lst 'first-position))))
   
   
@@ -120,20 +130,27 @@
   
   (define (DoCardSpecialAction crd)
     (case (crd 'Value)
-      ((2) (GivePlayerCardsFromTakeStack (Rules 'GetPlayer (Turn 1)) 2))
-      ((0) (GivePlayerCardsFromTakeStack (Rules 'GetPlayer (Turn 1)) 5))
-      ((11) (set! ColorAlteration (read))))) ; needs tweaking
+      ((2) (GivePlayerCardsFromTakeStack (Rules 'GetPlayer (Turn 1)) 2)
+           (set! ColorAlteration #f))
+      ((0) (GivePlayerCardsFromTakeStack (Rules 'GetPlayer (Turn 1)) 5)
+           (set! ColorAlteration #f))
+      ((11) (display "Geef de kleur waarnaar u wilt wijzigen op a.u.b.")
+            (newline)
+            (set! ColorAlteration (read))
+            (newline))
+      (else (set! ColorAlteration #f)))) ; needs tweaking
   
   (define (CalcNewTurn crd)
     (case (crd 'Value)
-      ((1) (Turn -1))
+      ((1) (set! turnDir (- turnDir))
+           (Turn turnDir))
       ((7) (Turn 0))
-      ((8) (Turn 2))
-      (else (Turn 1))))
+      ((8) (Turn (* turnDir 2)))
+      (else (Turn turnDir))))
   
   (define (WaitForValidMove noTakeStackOrigin)
     (let ((crdsel ((Rules 'GetPlayer CurrentTurn) 'GetSelect)))
-      (cond ((not crdsel) (WaitForValidMove))
+      (cond ((not crdsel) (WaitForValidMove noTakeStackOrigin))
             ((and (OriginatesFromCurrentPlayer crdsel)
                   (ValidMove (crdsel 'Card))) crdsel)
             ((and (not noTakeStackOrigin)
