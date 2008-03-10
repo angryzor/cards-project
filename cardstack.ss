@@ -49,6 +49,18 @@
   (define (flipUp)
     (set! up? #t))
   
+  (define (GUIDrawCall x y cd)
+    (cd 'DrawCardStack
+                dispatch
+                x
+                y))
+  
+  (define (GUIWidth desc)
+    (desc 'StackWidth))
+  
+  (define (GUIEvoHeight desc)
+    (desc 'StackHeight))
+  
 ;*****************************************************************
   ; function Implements?
   ;
@@ -58,7 +70,7 @@
   ;*****************************************************************
   (define (Implements? ClassDef)
     (or (eq? ClassDef 'CardStack) (stck 'Implements? ClassDef)))
-  (λ msg
+  (define (dispatch . msg)
     (if (null? msg)
         (stck)
         (case (car msg)
@@ -66,7 +78,11 @@
           ('flipDown (flipDown))
           ('flipUp (flipUp))
           ('faceUp? up?)
+          ('GUIDrawCall (GUIDrawCall (GetParam msg 0) (GetParam msg 1) (GetParam msg 2)))
+          ('GUIWidth (GUIWidth (GetParam msg 0)))
+          ('GUIHeight (GUIEvoHeight (GetParam msg 0)))
           ('Implements? (Implements? (GetParam msg 0)))
-          (else (apply stck msg))))))
+          (else (apply stck msg)))))
+  dispatch)
 
 

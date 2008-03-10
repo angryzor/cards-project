@@ -39,10 +39,23 @@
   (define (flipUp)
     (set! up? #t))
   
+  (define (GUIDrawCall x y cd)
+    (cd 'DrawCardSet
+                dispatch
+                x
+                y
+                'vertical))
+  
+  (define (GUIWidth desc)
+    (desc 'CardWidth))
+
+  (define (GUIEvoHeight desc)
+    (desc 'MaxSetEvolveHeight))
+
   (define (Implements? ClassDef)
     (eq? ClassDef 'CardSet))
   
-  (λ msg
+  (define (dispatch . msg)
     (if (null? msg)
         (first-position)
         (case (car msg)
@@ -55,5 +68,10 @@
           ('flipDown (flipDown))
           ('flipUp (flipUp))
           ('faceUp? up?)
+          ('empty? (plst 'empty?))
+          ('GUIDrawCall (GUIDrawCall (GetParam msg 0) (GetParam msg 1) (GetParam msg 2)))
+          ('GUIWidth (GUIWidth (GetParam msg 0)))
+          ('GUIHeight (GUIEvoHeight (GetParam msg 0)))
           ('Implements? (Implements? (GetParam msg 0)))
-          (else (error 'CardSet "message not understood: ~S" (car msg)))))))
+          (else (error 'CardSet "message not understood: ~S" (car msg))))))
+  dispatch)

@@ -149,7 +149,7 @@
   (define (map func new==?)
     (let ((res (double-linked-position-list new==?)))
       (define (iter thispos)
-        (res 'add-after (func (thispos 'value)))
+        (res 'add-after! (func (thispos 'value)))
         (if (thispos 'has-next?)
             (iter (thispos 'next))))
       (if (not (empty?))
@@ -255,6 +255,15 @@
                 (iter first)
                 (display ")"))))
   
+  (define (to-scheme-list)
+    (define (rec pos)
+      (if (pos 'has-next?)
+          (cons (pos 'value) (rec (pos 'next)))
+          (cons (pos 'value) '())))
+    (if (empty?)
+        '()
+        (rec (first-position))))
+  
   (define (Implements? ClassDef)
     (eq? ClassDef 'double-linked-position-list))
   
@@ -285,6 +294,7 @@
           ('has-prev? (gethas-prev? (GetParam msg 0)))
           ('print (debug-print-complete))
           ('duplicate (duplicate))
+          ('to-scheme-list (to-scheme-list))
           ('Implements? (Implements? (GetParam msg 0)))
           (else (error 'double-linked-position-list "message not understood: ~S" (car msg)))))))
 

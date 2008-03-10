@@ -10,7 +10,8 @@
   
   (define (remove! container)
     (if (or (ObjectOfType? 'CardStack container) (ObjectOfType? 'CardSet container))
-        (plst 'delete! (plst.find container))
+        (let ((cont (plst 'find container)))
+          (if cont (plst 'delete! cont)))
         (error 'CardTable.add! "expects type <CardStack> U <CardSet> as first argument, given: ~S" container)))
   
   (define (toPosList)

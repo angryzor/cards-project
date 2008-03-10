@@ -1,4 +1,5 @@
 (load "humanplayer.ss")
+(load "humanjokerenplayer.ss")
 (load "simpleguimanager.ss")
 
 (define (GameManager GRules PlayerNames PlayerClasses DrawerClass)
@@ -27,9 +28,11 @@
 (load "jokerengamerules.ss")
 
 (define b '())
+(define a '())
 (if (eq? (read) 'pesten)
-    (set! b (PestenGameRules))
-    (set! b (JokerenGameRules)))
-(define a (GameManager b '(Ruben Sander Meester) (list HumanPlayer HumanPlayer HumanPlayer) SimpleGUIManager))
+    (begin (set! b (PestenGameRules))
+           (set! a (GameManager b '(Ruben Sander Meester) (list HumanPlayer HumanPlayer HumanPlayer) SimpleGUIManager)))
+    (begin (set! b (JokerenGameRules))
+           (set! a (GameManager b '(Ruben Sander Meester) (list HumanJokerenPlayer HumanJokerenPlayer HumanJokerenPlayer) SimpleGUIManager))))
 (b 'RunRules)
 
