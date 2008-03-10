@@ -27,7 +27,11 @@
             (call-with-values (λ () (NextPos pos x y))
                               (λ (newx newy) (iter (poslst 'next pos) newx newy)))))
       (if (not (poslst 'empty?))
-          (iter (poslst 'first-position) 0 0))))
+          (begin
+            (set! positions (position-list (λ (x y)
+                                             (and (= (posn-x x) (posn-x y))
+                                                  (= (posn-y x) (posn-y y))))))
+            (iter (poslst 'first-position) 0 0)))))
   
   (define (poscmp? func p1 p2)
     (and (func (posn-x p1) (posn-x p2))

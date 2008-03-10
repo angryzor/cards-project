@@ -29,6 +29,9 @@
   (define (getHand)
     hand)
   
+  (define (StatusText! str)
+    #t)
+  
   (define (Implements? ClassDef)
     (eq? ClassDef 'Player))
   
@@ -47,5 +50,7 @@
           ('GetSelect #f)
           ('GetTableSelect #f)
           ('GetPlayerOwnCardsSelect #f)
+          ('StatusText! (StatusText! (GetParam msg 0)))
+          ('Name Name)
           ('Implements? (Implements? (GetParam msg 0)))
           (else (error 'Player "message not understood: ~S" (car msg)))))))

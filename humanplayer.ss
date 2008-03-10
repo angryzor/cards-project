@@ -11,6 +11,7 @@
           ('GetTableSelect (UI 'GetTableSelect))
           ('GetPlayerOwnCardsSelect (UI 'GetPlayerOwnCardsSelect))
           ('TableChanged (TableChanged))
+          ('StatusText! (StatusText! (GetParam msg 0)))
           ('Implements? (Implements? (GetParam msg 0)))
           (else (apply plyr msg)))))
 
@@ -26,75 +27,10 @@
   (define (TableChanged)
     (UI 'TableChanged))
   
+  (define (StatusText! str)
+    (UI 'StatusText! str))
+
   (define (Implements? ClassDef)
     (or (eq? ClassDef 'HumanPlayer) (plyr 'Implements? ClassDef)))
   
   HumanPlayer-Object)
-;DEMO CODE
-
-; (define cardcmp (λ (x y)
-;                   (if (and (= (x 'Value) (y 'Value))
-;                            (eq? (x 'Color) (y 'Color)))
-;                       0
-;                       1)))
-
-; (load "simpleguimanager.ss")
-; (load "gamerules.ss")
-; (load "deckgenerator.ss")
-; (define a (GameRules))
-; (define b (HumanPlayer 'Ruben a SimpleGUIManager))
-; (define c (Player 'Nick a SimpleGUIManager))
-; (define d (HumanPlayer 'Dries a SimpleGUIManager))
-; (define e (Player 'David a SimpleGUIManager))
-; (define f (CardStack #f))
-; (define g (CardSet))
-; (define h (CardStack))
-; (define deckgen (DeckGenerator cardcmp))
-; 
-; (a 'InitPlayers (vector b c d e))
-; (b 'Init)
-; (c 'Init)
-; (d 'Init)
-; (e 'Init)
-; 
-; ((a 'GetTable) 'add! f)
-; ((a 'GetTable) 'add! g)
-; ((a 'GetTable) 'add! h)
-; 
-; 
-; (let loop ((n 52))
-;   (if (> n 0)
-;       (begin (f 'push! (deckgen 'NextCard))
-;              (loop (- n 1)))))
-; (f 'push! (deckgen 'Joker))
-; (f 'push! (deckgen 'Joker))
-; (f 'shuffle)
-; 
-; (let loop ((n 13))
-;   (if (> n 0)
-;       (begin (b 'ReceiveCard (f 'pop!))
-;              (c 'ReceiveCard (f 'pop!))
-;              (d 'ReceiveCard (f 'pop!))
-;              (e 'ReceiveCard (f 'pop!))
-;              (loop (- n 1)))))
-; 
-; (b 'TableChanged)
-; (c 'TableChanged)
-; (d 'TableChanged)
-; (e 'TableChanged)
-; (b 'DisplayUpdate)
-; (c 'DisplayUpdate)
-; (d 'DisplayUpdate)
-; (e 'DisplayUpdate)
-; (define (UpdRec)
-;   (let ((crd (d 'GetPlayerOwnCardsSelect)))
-;     (if crd
-;         (begin (d 'DiscardCard crd)
-;                (h 'push! crd))))
-;   
-;   (b 'DisplayUpdate)
-;   (c 'DisplayUpdate)
-;   (d 'DisplayUpdate)
-;   (e 'DisplayUpdate)
-;   (UpdRec))
-; (UpdRec)

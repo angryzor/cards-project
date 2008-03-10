@@ -1,14 +1,11 @@
 (load "gamerules.ss")
 (load "deckgenerator.ss")
 
-(define (PestenGameRules)
+(define (JokerenGameRules)
   (define Rules (GameRules))
   (define CurrentTurn 0) ; index into players indicating which player is next.
   (define TakeStack (CardStack #f))
-  (define PlayStack (CardStack #t))
-  (define ColorStack (CardStack #t))
-  (define ColorAlteration #f)
-  (define turnDir 1)
+  (define DiscardStack (CardStack #t))
   
   ; Used to shift turns
   
@@ -51,8 +48,7 @@
   
   (define (InitTable)
     ((Rules 'GetTable) 'add! TakeStack)
-    ((Rules 'GetTable) 'add! PlayStack)
-    ((Rules 'GetTable) 'add! ColorStack)
+    ((Rules 'GetTable) 'add! DiscardStack)
     (Rules 'SendToAllPlayers 'TableChanged))
   
   (define (CreateCards)
@@ -193,7 +189,6 @@
                 (PlayStack 'push! ((Rules 'GetPlayer CurrentTurn) 'DiscardCard (crdsel 'Card)))
                 (set! CurrentTurn (CalcNewTurn (crdsel 'Card)))))))
     (DispCurrentColor)
-    (Rules 'SendToAllPlayers 'StatusText! (string-append (symbol->string ((Rules 'GetPlayer CurrentTurn) 'Name)) " is aan de beurt."))
     (Rules 'SendToAllPlayers 'DisplayUpdate))
   
   (define (DispCurrentColor)
@@ -204,11 +199,8 @@
   
   (define (LoopThroughTurns)
     (ProcessTurn #f)
-    (let ((plyrwocards (CheckIfAPlayerHasNoCards)))
-      (if (not plyrwocards)
-          (LoopThroughTurns)
-          (begin (display (plyrwocards 'Name) " heeft het spel gewonnen!")
-                 (newline)))))
+    (if (not (CheckIfAPlayerHasNoCards))
+        (LoopThroughTurns)))
   
   (define (RunRules)
     (InitTable)
@@ -216,7 +208,7 @@
     (DealCards) ;Deal
     (Rules 'SendToAllPlayers 'DisplayUpdate)
     (LoopThroughTurns)
-    (display "Einde spel"))
+    (display "Game Ended"))
   
   (λ msg
     (if (null? msg)

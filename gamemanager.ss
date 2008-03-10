@@ -24,6 +24,12 @@
           (else (error 'GameRules "message not understood: ~S" (car msg)))))))
 
 (load "pestengamerules.ss")
-(define b (PestenGameRules))
-(define a (GameManager b '(Ruben Sander) (list HumanPlayer HumanPlayer) SimpleGUIManager))
+(load "jokerengamerules.ss")
+
+(define b '())
+(if (eq? (read) 'pesten)
+    (set! b (PestenGameRules))
+    (set! b (JokerenGameRules)))
+(define a (GameManager b '(Ruben Sander Meester) (list HumanPlayer HumanPlayer HumanPlayer) SimpleGUIManager))
 (b 'RunRules)
+

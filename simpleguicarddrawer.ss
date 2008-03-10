@@ -94,14 +94,14 @@
     (define (calc-y)
       (let ((res (quotient (- (posn-y c-posn) (posn-y containerpos)) (CalcVertSpace))))
         (if (> res (- (cardlst 'length) 1))
-            (if (< (posn-y c-posn) (+ (posn-y containerpos) (* (- (cardlst 'length) 1) (guidesc 'MaxHSpace)) (guidesc 'CardWidth)))
+            (if (< (posn-y c-posn) (+ (posn-y containerpos) (* (- (cardlst 'length) 1) (guidesc 'MaxVSpace)) (guidesc 'CardHeight)))
                 (- (cardlst 'length) 1)
                 #f)
             res)))
     (define (TranslateToPosListMove cpos n)
-      (if (= n 0)
-          cpos
-          (TranslateToPosListMove (cpos 'next) (- n 1))))
+      (cond ((= n 0) cpos)
+            ((not (cpos 'has-next?)) #f)
+            (else (TranslateToPosListMove (cpos 'next) (- n 1)))))
     (if (cardlst 'empty?)
         #f
         (let ((res (if (eq? evo 'horizontal)
