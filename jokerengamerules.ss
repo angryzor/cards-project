@@ -264,7 +264,6 @@
                                   (begin
                                     (PosListAddSorting ((sel 'Origin) 'toPosList) (csel 'Card))
                                     (thisP 'DiscardCard (csel 'Card)))))))
-;                      (loop (apply WaitForSelection (thisP 'getHand) ConfirmStack (SetsOnTable 'to-scheme-list)))
                       (MainTurnTime setbuilds cardsmusthave)))))))
   
   
