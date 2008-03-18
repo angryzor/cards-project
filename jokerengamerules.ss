@@ -10,7 +10,6 @@
   (define ConfirmStack (CardStack #t)) ; Acts as a confirm button.
   (define firstRound #t)
   (define SetsOnTable (position-list eq?))
-  (define BuildingSets (position-list eq?))
   
   ; Used to shift turns
   
@@ -134,22 +133,28 @@
           (iter (set-lst 'next pos))))
     (if (not (set-lst 'empty?)) (iter (set-lst 'first-position))))
   
-  (define (RefundAllCards)
-    (BuildingSets 'map RefundCards eq?))
+; Operations on the set builds
   
-  (define (TotalValue poslst)
-    (poslst 'foldl (λ (x y)
-                           (+ x (y 'foldl (λ (x y)
-                                            (+ x (cond ((or (= 1 (y 'Value))
-                                                            (= 11 (y 'Value))
-                                                            (= 12 (y 'Value))
-                                                            (= 13 (y 'Value))) 10)
-                                                       ((= 0 (y 'Value)) 25)
-                                                       (y 'Value)))) 0))) 0))
+  (define (RefundAllCards setbuilds)
+    (map (λ (x)
+           (RefundCards (x 'toPosList))) setbuilds))
   
-  (define (GetTotalValueOfSets)
-    (TotalValue BuildingSets))
+  (define (TotalValue setbuilds)
+    (foldl (λ (x y)
+             (+ y ((x 'toPosList) 'foldl (λ (x y)
+                                           (+ x (cond ((or (= 1 (y 'Value))
+                                                           (= 11 (y 'Value))
+                                                           (= 12 (y 'Value))
+                                                           (= 13 (y 'Value))) 10)
+                                                      ((= 0 (y 'Value)) 25)
+                                                      (else (y 'Value))))) 0))) 0 setbuilds))
   
+  (define (RemoveSetBuildsFromTable setbuilds)
+    (for-each (λ (x)
+                ((Rules 'GetTable) 'remove! x)) setbuilds))
+  
+  
+; Check if a card is valid
   
   (define (CheckIfValidSet set-lst)
     (define (CheckIfSet)
@@ -207,13 +212,9 @@
                                                   (set-lst 'add-after! (sel 'Card))
                                                   (thisP 'DisplayUpdate)
                                                   (WaitForSetBuild set-lst))
-            ((CheckIfValidSet set-lst) (BuildingSets 'add-after! set-lst)
-                                       #t)
+            ((CheckIfValidSet set-lst) #t)
             (else (RefundCards set-lst)
                   #f))))
-  
-  (define (ClearCurPlyrSets)
-    (set! BuildingSets (position-list eq?)))
   
   (define (MainTurnTime setbuilds cardsmusthave)
     (let ((thisP (Rules 'GetPlayer CurrentTurn)))
@@ -224,7 +225,7 @@
                                                     ((Rules 'GetTable) 'add! set)
                                                     (Rules 'SendToAllPlayers 'TableChanged)
                                                     (thisP 'StatusText! "Klik op de kaarten die u wilt toevoegen aan de nieuwe set/rij. Klik op de joker om te bevestigen.")
-                                                    ((Rules 'GetPlayer CurrentTurn) 'DisplayUpdate)
+                                                    (thisP 'DisplayUpdate)
                                                     (if (not (WaitForSetBuild (set 'toPosList)))
                                                         (begin
                                                           ((Rules 'GetTable) 'remove! set)
@@ -233,31 +234,32 @@
                                                         (begin
                                                           (SetsOnTable 'add-after! set)
                                                           (MainTurnTime (cons set setbuilds) cardsmusthave)))))
-              ((OriginatesFromConfirmStack? sel) (if (and (not (thisP 'AlreadyPlayedOnTable?)) (< (GetTotalValueOfSets) 40))
+              ((OriginatesFromConfirmStack? sel) (if (and (not (null? setbuilds)) (not (thisP 'AlreadyPlayedOnTable?)) (< (TotalValue setbuilds) 40))
                                                      (begin
-                                                       (RefundAllCards)
-                                                       (ClearCurPlyrSets)
-                                                       (for-each (λ (x)
-                                                                   ((Rules 'GetTable) 'remove! x)) setbuilds)
-                                                       (Rules 'SendToAllPlayers 'TableChanged))
-                                                     (thisP 'AlreadyPlayedOnTable! #t))
-                                                 (thisP 'StatusText! "Kies een kaart die u op de aflegstapel wilt plaatsen.")
-                                                 (thisP 'DisplayUpdate))
+                                                       (RefundAllCards setbuilds)
+                                                       (RemoveSetBuildsFromTable setbuilds)
+                                                       (Rules 'SendToAllPlayers 'TableChanged)
+                                                       (MainTurnTime '() '()))
+                                                     (begin
+                                                       (thisP 'AlreadyPlayedOnTable! #t)
+                                                       (thisP 'StatusText! "Kies een kaart die u op de aflegstapel wilt plaatsen.")
+                                                       (thisP 'DisplayUpdate))))
               (else (begin 
                       (if (thisP 'AlreadyPlayedOnTable?)
                           (begin
                             (thisP 'StatusText! "Klik op de kaart (in uw hand) die u wilt toevoegen aan deze set/rij.")
-                            ((Rules 'GetPlayer CurrentTurn) 'DisplayUpdate)
+                            (thisP 'DisplayUpdate)
                             (let ((lstsel ((sel 'Origin) 'copyToPosList))
                                   (csel (WaitForSelection (thisP 'getHand))))
                               (if (CheckIfValidSet (PosListAddSorting lstsel (csel 'Card)))
                                   (PosListAddSorting ((sel 'Origin) 'toPosList) (csel 'Card))))))
-                      (loop (apply WaitForSelection (thisP 'getHand) ConfirmStack (SetsOnTable 'to-scheme-list)))))))))
+;                      (loop (apply WaitForSelection (thisP 'getHand) ConfirmStack (SetsOnTable 'to-scheme-list)))
+                      (MainTurnTime setbuilds cardsmusthave)))))))
   
   
   (define (ProcessTurn)
     (let ((thisP (Rules 'GetPlayer CurrentTurn)))
-      (Rules 'SendToAllPlayersBut thisP 'StatusText! (string-append (symbol->string (thisP 'Name)) "is aan de beurt."))
+      (Rules 'SendToAllPlayersBut thisP 'StatusText! (string-append (symbol->string (thisP 'Name)) " is aan de beurt."))
       (thisP 'StatusText! "U bent aan de beurt. Klik op de afneemstapel om een kaart te nemen.")
       (Rules 'SendToAllPlayers 'DisplayUpdate)
       (let ((sel (WaitForSelection TakeStack DiscardStack)))
