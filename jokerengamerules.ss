@@ -137,16 +137,18 @@
   (define (RefundAllCards)
     (BuildingSets 'map RefundCards eq?))
   
-  (define (GetTotalValueOfSets)
-    (BuildingSets 'foldl (λ (x y)
+  (define (TotalValue poslst)
+    (poslst 'foldl (λ (x y)
                            (+ x (y 'foldl (λ (x y)
-                                            (+ x (if (or (= 0 (y 'Value))
-                                                         (= 1 (y 'Value))
-                                                         (= 11 (y 'Value))
-                                                         (= 12 (y 'Value))
-                                                         (= 13 (y 'Value)))
-                                                     10
-                                                     (y 'Value)))) 0))) 0))
+                                            (+ x (cond ((or (= 1 (y 'Value))
+                                                            (= 11 (y 'Value))
+                                                            (= 12 (y 'Value))
+                                                            (= 13 (y 'Value))) 10)
+                                                       ((= 0 (y 'Value)) 25)
+                                                       (y 'Value)))) 0))) 0))
+  
+  (define (GetTotalValueOfSets)
+    (TotalValue BuildingSets))
   
   
   (define (CheckIfValidSet set-lst)
@@ -215,13 +217,13 @@
   
   (define (MainTurnTime setbuilds cardsmusthave)
     (let ((thisP (Rules 'GetPlayer CurrentTurn)))
-      (thisP 'StatusText! "Click Your cards to form sets/rows or click the joker to end your turn")
+      (thisP 'StatusText! "Klik op de kaarten in uw hand om te beginnen met het vormen van een set/rij of klik op de joker om uw beurt te beëindigen.")
       (thisP 'DisplayUpdate)
       (let loop ((sel (apply WaitForSelection (thisP 'getHand) ConfirmStack (SetsOnTable 'to-scheme-list))))
         (cond ((OriginatesFromCurrentPlayer? sel) (let ((set (CardSet #t)))
                                                     ((Rules 'GetTable) 'add! set)
                                                     (Rules 'SendToAllPlayers 'TableChanged)
-                                                    (thisP 'StatusText! "Click the cards that you want to add to the set/row. Click the Joker to confirm.")
+                                                    (thisP 'StatusText! "Klik op de kaarten die u wilt toevoegen aan de nieuwe set/rij. Klik op de joker om te bevestigen.")
                                                     ((Rules 'GetPlayer CurrentTurn) 'DisplayUpdate)
                                                     (if (not (WaitForSetBuild (set 'toPosList)))
                                                         (begin
@@ -239,22 +241,25 @@
                                                                    ((Rules 'GetTable) 'remove! x)) setbuilds)
                                                        (Rules 'SendToAllPlayers 'TableChanged))
                                                      (thisP 'AlreadyPlayedOnTable! #t))
-                                                 (thisP 'StatusText! "Choose a card to place back on the stack.")
+                                                 (thisP 'StatusText! "Kies een kaart die u op de aflegstapel wilt plaatsen.")
                                                  (thisP 'DisplayUpdate))
-              (else (if (thisP 'AlreadyPlayedOnTable?)
-                        (begin
-                          (thisP 'StatusText! "Click the card that you want to add to the set/row.")
-                          ((Rules 'GetPlayer CurrentTurn) 'DisplayUpdate)
-                          (let ((lstsel ((sel 'Origin) 'copyToPosList))
-                                (csel (WaitForSelection (thisP 'getHand))))
-                            (if (CheckIfValidSet (PosListAddSorting lstsel (csel 'Card)))
-                                (PosListAddSorting ((sel 'Origin) 'toPosList) (csel 'Card))
-                                (loop (apply WaitForSelection (thisP 'getHand) ConfirmStack (SetsOnTable 'to-scheme-list))))))
-                        (loop (apply WaitForSelection (thisP 'getHand) ConfirmStack (SetsOnTable 'to-scheme-list)))))))))
+              (else (begin 
+                      (if (thisP 'AlreadyPlayedOnTable?)
+                          (begin
+                            (thisP 'StatusText! "Klik op de kaart (in uw hand) die u wilt toevoegen aan deze set/rij.")
+                            ((Rules 'GetPlayer CurrentTurn) 'DisplayUpdate)
+                            (let ((lstsel ((sel 'Origin) 'copyToPosList))
+                                  (csel (WaitForSelection (thisP 'getHand))))
+                              (if (CheckIfValidSet (PosListAddSorting lstsel (csel 'Card)))
+                                  (PosListAddSorting ((sel 'Origin) 'toPosList) (csel 'Card))))))
+                      (loop (apply WaitForSelection (thisP 'getHand) ConfirmStack (SetsOnTable 'to-scheme-list)))))))))
   
   
   (define (ProcessTurn)
     (let ((thisP (Rules 'GetPlayer CurrentTurn)))
+      (Rules 'SendToAllPlayersBut thisP 'StatusText! (string-append (symbol->string (thisP 'Name)) "is aan de beurt."))
+      (thisP 'StatusText! "U bent aan de beurt. Klik op de afneemstapel om een kaart te nemen.")
+      (Rules 'SendToAllPlayers 'DisplayUpdate)
       (let ((sel (WaitForSelection TakeStack DiscardStack)))
         (cond ((eq? (sel 'Origin) TakeStack) (if (and firstRound (= CurrentTurn 1))
                                                  (set! firstRound #f))
@@ -267,8 +272,7 @@
       (let ((sel (WaitForSelection (thisP 'getHand))))
         (thisP 'DiscardCard (sel 'Card))
         (DiscardStack 'push! (sel 'Card)))
-      (set! CurrentTurn (Turn 1))
-      (Rules 'SendToAllPlayers 'DisplayUpdate)))
+      (set! CurrentTurn (Turn 1))))
   
   
   
@@ -278,7 +282,8 @@
     (let ((plyrwocards (CheckIfAPlayerHasNoCards)))
       (if (not plyrwocards)
           (LoopThroughTurns)
-          (begin (display (plyrwocards 'Name) " heeft het spel gewonnen!")
+          (begin (Rules 'SendToAllPlayers 'DisplayUpdate)
+                 (display (plyrwocards 'Name) " heeft het spel gewonnen!")
                  (newline)))))
   
   (define (RunRules)

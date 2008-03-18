@@ -3,7 +3,7 @@
 (load "simpleguiplayerio.ss")
 
 (define (SimpleGUIManager GRules ThisPlayer)
-  (define vpName "Card Game")
+  (define vpName (string-append "Card Game: Player " (symbol->string (ThisPlayer 'Name))))
   (define width 1024)
   (define height 768)
   (define statusText "")

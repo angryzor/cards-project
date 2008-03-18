@@ -31,8 +31,8 @@
 (define a '())
 (if (eq? (read) 'pesten)
     (begin (set! b (PestenGameRules))
-           (set! a (GameManager b '(Ruben Sander Meester) (list HumanPlayer HumanPlayer HumanPlayer) SimpleGUIManager)))
+           (set! a (GameManager b '(Ruben Sander Jackie) (list HumanPlayer HumanPlayer HumanPlayer) SimpleGUIManager)))
     (begin (set! b (JokerenGameRules))
-           (set! a (GameManager b '(Ruben Sander Meester) (list HumanJokerenPlayer HumanJokerenPlayer HumanJokerenPlayer) SimpleGUIManager))))
+           (set! a (GameManager b '(Ruben Sander Jackie) (list HumanJokerenPlayer HumanJokerenPlayer HumanJokerenPlayer) SimpleGUIManager))))
 (b 'RunRules)
 

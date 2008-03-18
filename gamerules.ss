@@ -11,6 +11,14 @@
                  (iter (+ i 1)))))
     (iter 0))
   
+  (define (SendToAllPlayersBut but msg . args)
+    (define (iter i)
+      (if (< i (NumPlayers))
+          (begin (if (not (eq? (GetPlayer i) but))
+                     (apply (GetPlayer i) msg args))
+                 (iter (+ i 1)))))
+    (iter 0))
+  
   (define (InitPlayers plyrs)
     (set! Players plyrs)
     (SendToAllPlayers 'Init)
@@ -53,5 +61,6 @@
           ('NumPlayers (NumPlayers))
           ('GetTable (GetTable))
           ('SendToAllPlayers (apply SendToAllPlayers (cdr msg)))
+          ('SendToAllPlayersBut (apply SendToAllPlayersBut (cdr msg)))
           ('Implements? (Implements? (GetParam msg 0)))
           (else (error 'GameRules "message not understood: ~S" (car msg)))))))

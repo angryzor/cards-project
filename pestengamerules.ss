@@ -216,6 +216,7 @@
                                   (set! skip #t)))))
               (begin (GivePlayerCardsFromTakeStack (Rules 'GetPlayer CurrentTurn) cardTakeAcc)
                      (set! cardTakeAcc 0))))
+      (Rules 'SendToAllPlayers 'DisplayUpdate)
       (if (not skip)
           (if (and afterTaking
                    (PlayerHasNoValidCards (Rules 'GetPlayer CurrentTurn)))

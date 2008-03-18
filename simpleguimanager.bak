@@ -3,9 +3,10 @@
 (load "simpleguiplayerio.ss")
 
 (define (SimpleGUIManager GRules ThisPlayer)
-  (define vpName "Card Game")
+  (define vpName "Card Game: Player" (symbol->string (ThisPlayer 'Name)))
   (define width 1024)
   (define height 768)
+  (define statusText "")
   (open-graphics)
   
   (let* ((portDisplay (open-viewport vpName width height))
@@ -55,6 +56,7 @@
       (BeginPaint (make-rgb 0 0.5 0))
       (tableio 'Draw)
       (playerio 'Draw)
+      ((draw-string portMemory) (make-posn (+ (guidesc 'CardWidth) 10) (- (guidesc 'ViewPortHeight) (+ (guidesc 'CardHeight) 16))) statusText (make-rgb 1 1 1))
       (EndPaint))
     
     (define (Implements? ClassDef)
@@ -63,6 +65,13 @@
     (define (Init)
       (playerio 'Init))
     
+    (define (WaitForMouse)
+      (viewport-flush-input (guidesc 'ViewPortWindow))
+      (mouse-click-posn (get-mouse-click (guidesc 'ViewPortWindow))))
+    
+    (define (StatusText! str)
+      (set! statusText str))
+    
     (λ msg
       (if (null? msg)
           (error 'SimpleGUIManager "object requires a message")
@@ -70,9 +79,12 @@
             ('TableChanged (TableChanged))
             ('DisplayUpdate (DisplayUpdate))
             ('Init (Init))
-            ('GetTableSelect (tableio 'GetClickWait))
-            ('GetPlayerOwnCardsSelect (playerio 'GetOwnClickWait))
-            ('GetSelect (or (tableio 'GetClickWait)
-                            (playerio 'GetOwnClickWait)))
+            ('GetTableSelect (tableio 'GetClick (WaitForMouse)))
+            ('GetPlayerOwnCardsSelect (playerio 'GetOwnClick (WaitForMouse)))
+            ('GetSelect (let ((c-posn (WaitForMouse)))
+                          (or (tableio 'GetClick c-posn)
+                              (playerio 'GetOwnClick c-posn))))
+            ('StatusText! (StatusText! (GetParam msg 0)))
+;            ('DrawText (DrawText (GetParam msg 0) (GetParam msg 1) (GetParam msg 2)))
             ('Implements? (Implements? (GetParam msg 0)))
             (else (error 'SimpleGUIManager "message not understood: ~S" (car msg))))))))
