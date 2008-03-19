@@ -42,7 +42,7 @@
   ; @return: true if this card is equal to Other, false otherwise
   ;*****************************************************************
   (define (=? Other)
-    (= (==? (Card color value ==?) Other) 0))
+    (= (==? Card-Object Other) 0))
   ;*****************************************************************
   ; function <?
   ;
@@ -51,7 +51,7 @@
   ;          otherwise
   ;*****************************************************************
   (define (<? Other)
-    (= (==? (Card color value ==?) Other) -1))
+    (= (==? Card-Object Other) -1))
   ;*****************************************************************
   ; function >?
   ;
@@ -60,7 +60,7 @@
   ;          otherwise
   ;*****************************************************************
   (define (>? Other)
-    (= (==? (Card color value ==?) Other) 1))
+    (= (==? Card-Object Other) 1))
   ;*****************************************************************
   ; function <=?
   ;
@@ -69,7 +69,7 @@
   ;          false otherwise
   ;*****************************************************************
   (define (<=? Other)
-    (let ((cmpres (==? (Card color value ==?) Other)))
+    (let ((cmpres (==? Card-Object Other)))
       (or (= cmpres -1) (= cmpres 0))))
   ;*****************************************************************
   ; function >=?
@@ -79,7 +79,7 @@
   ;          false otherwise
   ;*****************************************************************
   (define (>=? Other)
-    (let ((cmpres (==? (Card color value ==?) Other)))
+    (let ((cmpres (==? Card-Object Other)))
       (or (= cmpres 0) (= cmpres 1))))
   
   (define (my-equal? Other)
@@ -95,13 +95,7 @@
   (define (Implements? ClassDef)
     (eq? ClassDef 'Card))
   
-  ;Check for wrong types of arguments
-  (if (not (symbol? color))
-      (error 'Card "expects type <symbol> as 1st argument, given: ~S" color))
-  (if (not (number? value))
-      (error 'Card "expects type <number> as 1st argument, given: ~S" value))
-  
-  (λ msg
+  (define (Card-Object . msg)
     (if (null? msg)
         (begin (display (cons (Color) (Value))))
         (case (car msg)
@@ -114,4 +108,12 @@
           ('>=? (>=? (GetParam msg 0)))
           ('equal? (my-equal? (GetParam msg 0)))
           ('Implements? (Implements? (GetParam msg 0)))
-          (else (error 'Card "message not understood: ~S" (car msg)))))))
+          (else (error 'Card "message not understood: ~S" (car msg))))))
+  
+  ;Check for wrong types of arguments
+  (if (not (symbol? color))
+      (error 'Card "expects type <symbol> as 1st argument, given: ~S" color))
+  (if (not (number? value))
+      (error 'Card "expects type <number> as 1st argument, given: ~S" value))
+  
+  Card-Object)

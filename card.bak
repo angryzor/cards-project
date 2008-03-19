@@ -82,9 +82,9 @@
     (let ((cmpres (==? (Card color value ==?) Other)))
       (or (= cmpres 0) (= cmpres 1))))
   
-  (define (my-eq? crd1 crd2)
-    (and (eq? (crd1 'Color) (crd2 'Color))
-         (= (crd1 'Value) (crd2 'Value))))
+  (define (my-equal? Other)
+    (and (eq? color (Other 'Color))
+         (= value (Other 'Value))))
   ;*****************************************************************
   ; function Implements?
   ;
@@ -101,7 +101,7 @@
   (if (not (number? value))
       (error 'Card "expects type <number> as 1st argument, given: ~S" value))
   
-  (λ msg
+  (define (Card-Object . msg)
     (if (null? msg)
         (begin (display (cons (Color) (Value))))
         (case (car msg)
@@ -112,6 +112,7 @@
           ('>? (>? (GetParam msg 0)))
           ('<=? (<=? (GetParam msg 0)))
           ('>=? (>=? (GetParam msg 0)))
-          ('eq? (my-eq? (GetParam msg 0) (GetParam msg 1)))
+          ('equal? (my-equal? (GetParam msg 0)))
           ('Implements? (Implements? (GetParam msg 0)))
-          (else (error 'Card "message not understood: ~S" (car msg)))))))
+          (else (error 'Card "message not understood: ~S" (car msg))))))
+  Card-Object)
