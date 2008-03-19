@@ -196,6 +196,14 @@
     (if (empty?)
         #f
         (iter first)))
+  (define (find-eq value)
+    (define (iter pos)
+      (cond ((eq? (pos 'value) value) pos)
+            ((pos 'has-next?) (iter (pos 'next)))
+            (else #f)))
+    (if (empty?)
+        #f
+        (iter first)))
   (define (delete! pos)
     (cond ((null? pos) (error 'double-linked-position-list.delete! "Cannot delete null position"))
           ((<= size 0) (error 'double-linked-position-list.delete! "Utterly weird error occurred: delete! invoked with valid position, but list size is ~S" size))
@@ -232,6 +240,9 @@
   
   (define (gethas-prev? pos)
     (pos 'has-prev?))
+  
+  (define (update! pos val)
+    (pos 'value! val))
   
   (define (duplicate)
     (define (iter lst pos)
@@ -284,12 +295,14 @@
           ('first-position (first-position))
           ('last-position (last-position))
           ('find (find (GetParam msg 0)))
+          ('find-eq (find-eq (GetParam msg 0)))
           ('delete! (delete! (GetParam msg 0)))
           ('add-before! (apply add-before! (GetParam msg 0) (cddr msg)))
           ('add-after! (apply add-after! (GetParam msg 0) (cddr msg)))
           ('next (getnext (GetParam msg 0)))
           ('prev (getprev (GetParam msg 0)))
           ('value (getval (GetParam msg 0)))
+          ('update! (update! (GetParam msg 0) (GetParam msg 1)))
           ('has-next? (gethas-next? (GetParam msg 0)))
           ('has-prev? (gethas-prev? (GetParam msg 0)))
           ('print (debug-print-complete))

@@ -10,7 +10,7 @@
   (define DiscardStack (CardStack #t))
   (define ConfirmStack (CardStack #t)) ; Acts as a confirm button.
   (define firstRound #t)
-  (define SetsOnTable (position-list eq?))
+  (define SetsOnTable '())
   
   ; Used to shift turns
   
@@ -69,14 +69,14 @@
   ; Deals cards
   
   (define (DealCards)
-;    (TakeStack 'shuffle)
-;    (let loop ((n 13))
-;      (if (> n 0)
-;          (begin (let loop2 ((plyr (- (Rules 'NumPlayers) 1)))
-;                   (if (>= plyr 0)
-;                       (begin (GivePlayerCardsFromTakeStack (Rules 'GetPlayer plyr) 1)
-;                              (loop2 (- plyr 1)))))
-;                 (loop (- n 1)))))
+    ;    (TakeStack 'shuffle)
+    ;    (let loop ((n 13))
+    ;      (if (> n 0)
+    ;          (begin (let loop2 ((plyr (- (Rules 'NumPlayers) 1)))
+    ;                   (if (>= plyr 0)
+    ;                       (begin (GivePlayerCardsFromTakeStack (Rules 'GetPlayer plyr) 1)
+    ;                              (loop2 (- plyr 1)))))
+    ;                 (loop (- n 1)))))
     (let loop2 ((plyr (- (Rules 'NumPlayers) 1)))
       (if (>= plyr 0)
           (begin (let loop ((n 13))
@@ -109,7 +109,7 @@
   
   (define (OriginatesFromConfirmStack? crdsel)
     (eq? (crdsel 'Origin) ConfirmStack))
-
+  
   (define (WaitForSelection . possibleorigins)
     (define (TryOrigins sel)
       (define (iter orgns)
@@ -141,7 +141,7 @@
           (iter (set-lst 'next pos))))
     (if (not (set-lst 'empty?)) (iter (set-lst 'first-position))))
   
-; Operations on the set builds
+  ; Operations on the set builds
   
   (define (RefundAllCards setbuilds)
     (map (λ (x)
@@ -161,8 +161,13 @@
     (for-each (λ (x)
                 ((Rules 'GetTable) 'remove! x)) setbuilds))
   
+  (define (ExactCardOnTable? card)
+    (foldl (λ (x y)
+             (or x y)) #f (map (λ (x)
+                                 ((x 'toPosList) 'find-eq card)) SetsOnTable)))
   
-; Check if a card is valid
+  
+  ; Check if a card is valid
   
   (define (CheckIfValidSet set-lst)
     (define (CheckIfSet)
@@ -224,11 +229,15 @@
             (else (RefundCards set-lst)
                   #f))))
   
-  (define (MainTurnTime setbuilds cardsmusthave)
+  (define (MainTurnTime setbuilds cardsmusthave cardfromdiscstack)
+    (define (CardsMustHaveOnTable?)
+      (foldl (λ (x y)
+               (and x y)) #t (map (λ (x)
+                                    (ExactCardOnTable? x)) cardsmusthave)))
     (let ((thisP (Rules 'GetPlayer CurrentTurn)))
       (thisP 'StatusText! "Klik op de kaarten in uw hand om te beginnen met het vormen van een set/rij of klik op de joker om uw beurt te beëindigen.")
       (thisP 'DisplayUpdate)
-      (let loop ((sel (apply WaitForSelection (thisP 'getHand) ConfirmStack (SetsOnTable 'to-scheme-list))))
+      (let loop ((sel (apply WaitForSelection (thisP 'getHand) ConfirmStack SetsOnTable)))
         (cond ((OriginatesFromCurrentPlayer? sel) (let ((set (CardSet #t)))
                                                     ((Rules 'GetTable) 'add! set)
                                                     (Rules 'SendToAllPlayers 'TableChanged)
@@ -238,33 +247,49 @@
                                                         (begin
                                                           ((Rules 'GetTable) 'remove! set)
                                                           (Rules 'SendToAllPlayers 'TableChanged)
-                                                          (MainTurnTime setbuilds cardsmusthave))
+                                                          (MainTurnTime setbuilds cardsmusthave cardfromdiscstack))
                                                         (begin
-                                                          (SetsOnTable 'add-after! set)
-                                                          (MainTurnTime (cons set setbuilds) cardsmusthave)))))
-              ((OriginatesFromConfirmStack? sel) (if (and (not (null? setbuilds)) (not (thisP 'AlreadyPlayedOnTable?)) (< (TotalValue setbuilds) 40))
+                                                          (set! SetsOnTable (cons set SetsOnTable))
+                                                          (MainTurnTime (cons set setbuilds) cardsmusthave cardfromdiscstack)))))
+              ((OriginatesFromConfirmStack? sel) (if (or (and (not (null? setbuilds)) (not (thisP 'AlreadyPlayedOnTable?)) (< (TotalValue setbuilds) 40))
+                                                         (not (debug (CardsMustHaveOnTable?))))
                                                      (begin
                                                        (RefundAllCards setbuilds)
                                                        (RemoveSetBuildsFromTable setbuilds)
                                                        (Rules 'SendToAllPlayers 'TableChanged)
-                                                       (MainTurnTime '() '()))
+                                                       (MainTurnTime '() '() #f))
                                                      (begin
                                                        (thisP 'AlreadyPlayedOnTable! #t)
                                                        (thisP 'StatusText! "Kies een kaart die u op de aflegstapel wilt plaatsen.")
                                                        (thisP 'DisplayUpdate))))
-              (else (begin 
-                      (if (thisP 'AlreadyPlayedOnTable?)
-                          (begin
-                            (thisP 'StatusText! "Klik op de kaart (in uw hand) die u wilt toevoegen aan deze set/rij.")
-                            (thisP 'DisplayUpdate)
-                            (let ((lstsel ((sel 'Origin) 'copyToPosList))
-                                  (csel (WaitForSelection (thisP 'getHand))))
-                              (PosListAddSorting lstsel (csel 'Card))
-                              (if (CheckIfValidSet lstsel)
-                                  (begin
-                                    (PosListAddSorting ((sel 'Origin) 'toPosList) (csel 'Card))
-                                    (thisP 'DiscardCard (csel 'Card)))))))
-                      (MainTurnTime setbuilds cardsmusthave)))))))
+              (else (if (thisP 'AlreadyPlayedOnTable?)
+                        (if (eq? ((sel 'Card) 'Color) 'joker)
+                            (begin
+                              (thisP 'StatusText! "Klik op de kaart (in uw hand) die u wilt wisselen met deze joker.")
+                              (thisP 'DisplayUpdate)
+                              (let ((lstsel ((sel 'Origin) 'copyToPosList))
+                                    (csel (WaitForSelection (thisP 'getHand))))
+                                (lstsel 'update! (lstsel 'find-eq (sel 'Card)) (csel 'Card))
+                                (if (CheckIfValidSet lstsel)
+                                    (begin
+                                      (((sel 'Origin) 'toPosList) 'update! (lstsel 'find-eq (sel 'Card)) (csel 'Card))
+                                      (thisP 'DiscardCard (csel 'Card))
+                                      (MainTurnTime setbuilds (cons (csel 'Card) cardsmusthave cardfromdiscstack)))
+                                    (MainTurnTime setbuilds cardsmusthave cardfromdiscstack))))
+                            (begin
+                              (thisP 'StatusText! "Klik op de kaart (in uw hand) die u wilt toevoegen aan deze set/rij.")
+                              (thisP 'DisplayUpdate)
+                              (let ((lstsel ((sel 'Origin) 'copyToPosList))
+                                    (csel (WaitForSelection (thisP 'getHand))))
+                                (PosListAddSorting lstsel (csel 'Card))
+                                (if (CheckIfValidSet lstsel)
+                                    (begin
+                                      (PosListAddSorting ((sel 'Origin) 'toPosList) (csel 'Card))
+                                      (thisP 'DiscardCard (csel 'Card)))))
+                              (MainTurnTime setbuilds cardsmusthave cardfromdiscstack)))
+                        (MainTurnTime setbuilds cardsmusthave cardfromdiscstack)))))))
+  
+  
   
   
   (define (ProcessTurn)
@@ -272,15 +297,19 @@
       (Rules 'SendToAllPlayersBut thisP 'StatusText! (string-append (symbol->string (thisP 'Name)) " is aan de beurt."))
       (thisP 'StatusText! "U bent aan de beurt. Klik op de afneemstapel om een kaart te nemen.")
       (Rules 'SendToAllPlayers 'DisplayUpdate)
-      (let ((sel (WaitForSelection TakeStack DiscardStack)))
+      (let loop ((sel (WaitForSelection TakeStack DiscardStack)))
         (cond ((eq? (sel 'Origin) TakeStack) (if (and firstRound (= CurrentTurn 1))
                                                  (set! firstRound #f))
-                                             (thisP 'ReceiveCard (TakeStack 'pop!))) ; Player takes card from takestack
+                                             (thisP 'ReceiveCard (TakeStack 'pop!))
+                                             (Rules 'SendToAllPlayers 'DisplayUpdate)
+                                             (MainTurnTime '() '() #f)) ; Player takes card from takestack
               ((and firstRound (= CurrentTurn 1)) (set! firstRound #f)
-                                                  (thisP 'ReceiveCard (TakeStack 'pop!)))
-              (else (thisP 'ReceiveCard (sel 'Card))))) ; TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-      (Rules 'SendToAllPlayers 'DisplayUpdate)
-      (MainTurnTime '() '())
+                                                  (thisP 'ReceiveCard (TakeStack 'pop!))
+                                                  (Rules 'SendToAllPlayers 'DisplayUpdate)
+                                                  (MainTurnTime '() '() #f))
+              (else (thisP 'ReceiveCard (DiscardStack 'pop!))
+                    (Rules 'SendToAllPlayers 'DisplayUpdate)
+                    (MainTurnTime '() (list (sel 'Card)) (sel 'Card))))) ; TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
       (let ((sel (WaitForSelection (thisP 'getHand))))
         (thisP 'DiscardCard (sel 'Card))
         (DiscardStack 'push! (sel 'Card)))
