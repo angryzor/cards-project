@@ -1,7 +1,6 @@
 (load "double-linked-position-list.ss")
 (load "gamerules.ss")
 (load "deckgenerator.ss")
-(load "debug.ss")
 
 (define (JokerenGameRules)
   (define Rules (GameRules))
