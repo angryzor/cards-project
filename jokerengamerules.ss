@@ -229,7 +229,7 @@
             (else (RefundCards set-lst)
                   #f))))
   
-  (define (MainTurnTime setbuilds cardsmusthave cardfromdiscstack)
+  (define (MainTurnTime setbuilds cardsmusthave)
     (define (CardsMustHaveOnTable?)
       (foldl (λ (x y)
                (and x y)) #t (map (λ (x)
@@ -247,21 +247,22 @@
                                                         (begin
                                                           ((Rules 'GetTable) 'remove! set)
                                                           (Rules 'SendToAllPlayers 'TableChanged)
-                                                          (MainTurnTime setbuilds cardsmusthave cardfromdiscstack))
+                                                          (MainTurnTime setbuilds cardsmusthave))
                                                         (begin
                                                           (set! SetsOnTable (cons set SetsOnTable))
-                                                          (MainTurnTime (cons set setbuilds) cardsmusthave cardfromdiscstack)))))
+                                                          (MainTurnTime (cons set setbuilds) cardsmusthave)))))
               ((OriginatesFromConfirmStack? sel) (if (or (and (not (null? setbuilds)) (not (thisP 'AlreadyPlayedOnTable?)) (< (TotalValue setbuilds) 40))
-                                                         (not (debug (CardsMustHaveOnTable?))))
+                                                         (not (CardsMustHaveOnTable?)))
                                                      (begin
                                                        (RefundAllCards setbuilds)
                                                        (RemoveSetBuildsFromTable setbuilds)
                                                        (Rules 'SendToAllPlayers 'TableChanged)
-                                                       (MainTurnTime '() '() #f))
+                                                       #f)
                                                      (begin
                                                        (thisP 'AlreadyPlayedOnTable! #t)
                                                        (thisP 'StatusText! "Kies een kaart die u op de aflegstapel wilt plaatsen.")
-                                                       (thisP 'DisplayUpdate))))
+                                                       (thisP 'DisplayUpdate)
+                                                       #t)))
               (else (if (thisP 'AlreadyPlayedOnTable?)
                         (if (eq? ((sel 'Card) 'Color) 'joker)
                             (begin
@@ -274,8 +275,8 @@
                                     (begin
                                       (((sel 'Origin) 'toPosList) 'update! (lstsel 'find-eq (sel 'Card)) (csel 'Card))
                                       (thisP 'DiscardCard (csel 'Card))
-                                      (MainTurnTime setbuilds (cons (csel 'Card) cardsmusthave cardfromdiscstack)))
-                                    (MainTurnTime setbuilds cardsmusthave cardfromdiscstack))))
+                                      (MainTurnTime setbuilds (cons (csel 'Card) cardsmusthave)))
+                                    (MainTurnTime setbuilds cardsmusthave))))
                             (begin
                               (thisP 'StatusText! "Klik op de kaart (in uw hand) die u wilt toevoegen aan deze set/rij.")
                               (thisP 'DisplayUpdate)
@@ -286,30 +287,35 @@
                                     (begin
                                       (PosListAddSorting ((sel 'Origin) 'toPosList) (csel 'Card))
                                       (thisP 'DiscardCard (csel 'Card)))))
-                              (MainTurnTime setbuilds cardsmusthave cardfromdiscstack)))
-                        (MainTurnTime setbuilds cardsmusthave cardfromdiscstack)))))))
-  
-  
+                              (MainTurnTime setbuilds cardsmusthave)))
+                        (MainTurnTime setbuilds cardsmusthave)))))))
   
   
   (define (ProcessTurn)
     (let ((thisP (Rules 'GetPlayer CurrentTurn)))
+      (define (MainLoop)
+        (thisP 'StatusText! "U bent aan de beurt. Klik op de afneemstapel om een kaart te nemen.")
+        (Rules 'SendToAllPlayers 'DisplayUpdate)
+        (let ((sel (WaitForSelection TakeStack DiscardStack)))
+          (cond ((eq? (sel 'Origin) TakeStack) (if (and firstRound (= CurrentTurn 1))
+                                                   (set! firstRound #f))
+                                               (thisP 'ReceiveCard (TakeStack 'pop!))
+                                               (Rules 'SendToAllPlayers 'DisplayUpdate)
+                                               (if (not (MainTurnTime '() '()))
+                                                   (MainLoop))) ; Player takes card from takestack
+                ((and firstRound (= CurrentTurn 1)) (set! firstRound #f)
+                                                    (thisP 'ReceiveCard (TakeStack 'pop!))
+                                                    (Rules 'SendToAllPlayers 'DisplayUpdate)
+                                                    (if (not (MainTurnTime '() '()))
+                                                        (MainLoop)))
+                (else (thisP 'ReceiveCard (DiscardStack 'pop!))
+                      (Rules 'SendToAllPlayers 'DisplayUpdate)
+                      (if (not (MainTurnTime '() (list (sel 'Card))))
+                          (begin (DiscardStack 'push! (sel 'Card))
+                                 (thisP 'DiscardCard (sel 'Card))
+                                 (MainLoop)))))))
       (Rules 'SendToAllPlayersBut thisP 'StatusText! (string-append (symbol->string (thisP 'Name)) " is aan de beurt."))
-      (thisP 'StatusText! "U bent aan de beurt. Klik op de afneemstapel om een kaart te nemen.")
-      (Rules 'SendToAllPlayers 'DisplayUpdate)
-      (let loop ((sel (WaitForSelection TakeStack DiscardStack)))
-        (cond ((eq? (sel 'Origin) TakeStack) (if (and firstRound (= CurrentTurn 1))
-                                                 (set! firstRound #f))
-                                             (thisP 'ReceiveCard (TakeStack 'pop!))
-                                             (Rules 'SendToAllPlayers 'DisplayUpdate)
-                                             (MainTurnTime '() '() #f)) ; Player takes card from takestack
-              ((and firstRound (= CurrentTurn 1)) (set! firstRound #f)
-                                                  (thisP 'ReceiveCard (TakeStack 'pop!))
-                                                  (Rules 'SendToAllPlayers 'DisplayUpdate)
-                                                  (MainTurnTime '() '() #f))
-              (else (thisP 'ReceiveCard (DiscardStack 'pop!))
-                    (Rules 'SendToAllPlayers 'DisplayUpdate)
-                    (MainTurnTime '() (list (sel 'Card)) (sel 'Card))))) ; TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+      (MainLoop)
       (let ((sel (WaitForSelection (thisP 'getHand))))
         (thisP 'DiscardCard (sel 'Card))
         (DiscardStack 'push! (sel 'Card)))
